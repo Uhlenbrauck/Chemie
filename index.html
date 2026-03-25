@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chemie – Unterrichtsmaterialien</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #f7f6f2;
+    --surface:  #ffffff;
+    --border:   #e2e0d8;
+    --text:     #1a1a18;
+    --muted:    #6b6960;
+    --accent:   #2d5a3d;
+    --accent-lt:#e8f0eb;
+    --tag-ef:   #dbeafe;
+    --tag-ef-t: #1e40af;
+    --tag-sk:   #fef3c7;
+    --tag-sk-t: #92400e;
+    --tag-mat:  #f3e8ff;
+    --tag-mat-t:#6b21a8;
+  }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--accent);
+    color: #fff;
+    padding: 48px 40px 36px;
+  }
+
+  header .eyebrow {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 10px;
+  }
+
+  header h1 {
+    font-size: clamp(26px, 4vw, 40px);
+    font-weight: normal;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+
+  header p {
+    margin-top: 10px;
+    font-size: 15px;
+    opacity: 0.75;
+    font-style: italic;
+    max-width: 500px;
+  }
+
+  /* ── Main layout ── */
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── Section headers ── */
+  .section-title {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Card grid ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 22px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  }
+
+  .card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 16px rgba(45, 90, 61, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .tag {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: bold;
+  }
+
+  .tag-ef  { background: var(--tag-ef);  color: var(--tag-ef-t); }
+  .tag-sk  { background: var(--tag-sk);  color: var(--tag-sk-t); }
+  .tag-mat { background: var(--tag-mat); color: var(--tag-mat-t); }
+
+  .card-icon {
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  .card h2 {
+    font-size: 16px;
+    font-weight: normal;
+    line-height: 1.4;
+    color: var(--text);
+  }
+
+  .card p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .card-arrow {
+    font-size: 12px;
+    color: var(--accent);
+    margin-top: auto;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .card:hover .card-arrow { opacity: 1; }
+
+  /* ── Coming soon card ── */
+  .card-soon {
+    border-style: dashed;
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .card-soon:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--border);
+  }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 11px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Unterrichtsmaterialien</div>
+  <h1>Chemie</h1>
+  <p>Digitale Materialien für alle Jahrgangsstufen</p>
+</header>
+
+<main>
+
+  <div class="section-title">Sekundarstufe I</div>
+  <div class="cards">
+
+    <div class="card card-soon">
+      <div class="card-icon">🔬</div>
+      <h2>Materialien folgen</h2>
+      <p>Platzhalter für Materialien der Sekundarstufe I.</p>
+    </div>
+
+  </div>
+
+  <div class="section-title">Sekundarstufe II — Einführungsphase (EF)</div>
+  <div class="cards">
+
+    <a class="card" href="Linksammlung_Zusatzstoffe.html">
+      <div class="card-meta">
+        <span class="tag tag-ef">EF</span>
+        <span class="tag tag-sk">Strukturierte Kontroverse</span>
+        <span class="tag tag-mat">Linksammlung</span>
+      </div>
+      <div class="card-icon">🔗</div>
+      <h2>Linksammlung – Aroma- und Zusatzstoffe in Lebensmitteln</h2>
+      <p>14 geprüfte Quellen (6 Pro, 6 Contra, 2 Hintergrund) zur Strukturierten Kontroverse über den Einsatz synthetischer Lebensmittelzusatzstoffe.</p>
+      <div class="card-arrow">Öffnen →</div>
+    </a>
+
+    <div class="card card-soon">
+      <div class="card-meta">
+        <span class="tag tag-ef">EF</span>
+        <span class="tag tag-mat">Weitere Materialien</span>
+      </div>
+      <div class="card-icon">📄</div>
+      <h2>Weitere Materialien folgen</h2>
+      <p>Platzhalter für zukünftige Materialien zur Einführungsphase.</p>
+    </div>
+
+  </div>
+
+  <div class="section-title">Sekundarstufe II — Qualifikationsphase (Q1 / Q2)</div>
+  <div class="cards">
+
+    <div class="card card-soon">
+      <div class="card-icon">🧪</div>
+      <h2>Materialien folgen</h2>
+      <p>Platzhalter für Materialien zur Qualifikationsphase.</p>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>
+  Chemie · Unterrichtsmaterialien &nbsp;·&nbsp; github.io
+</footer>
+
+</body>
+</html>
