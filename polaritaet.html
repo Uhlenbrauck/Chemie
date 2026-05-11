@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Molekülpolarität – Dipol & Ladungsschwerpunkte</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #f5f5f0;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: normal;
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+    color: #1a1a1a;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 32px;
+  }
+
+  /* ── Molecules wrapper ── */
+  .molecules-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* ── Molecule card ── */
+  .mol-card {
+    background: #fff;
+    border: 1px solid #d4d4cc;
+    border-radius: 10px;
+    padding: 20px 24px 16px;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+
+  .mol-card + .mol-card {
+    margin-top: 20px;
+  }
+
+  .mol-title {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: #2a7a2a;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* ── Canvas ── */
+  canvas {
+    display: block;
+    margin: 0 auto;
+    border-radius: 6px;
+    background: #fafaf7;
+    border: 1px solid #e0e0d8;
+  }
+
+  /* ── Angle control ── */
+  .angle-control {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .angle-control label {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.82rem;
+    color: #444;
+    white-space: nowrap;
+    min-width: 120px;
+  }
+
+  .angle-control input[type=range] {
+    flex: 1;
+    accent-color: #2a7a2a;
+    cursor: pointer;
+    height: 6px;
+  }
+
+  .angle-value {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.88rem;
+    font-weight: bold;
+    color: #2a7a2a;
+    min-width: 46px;
+    text-align: right;
+  }
+
+  /* ── Checkboxes ── */
+  .checkboxes {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+  }
+
+  .checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.88rem;
+    color: #444;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .checkboxes input[type=checkbox] {
+    accent-color: #2a7a2a;
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+  }
+
+  /* ── Status label ── */
+  .dipol-status {
+    margin-top: 12px;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.88rem;
+    min-height: 1.4em;
+    color: #1a1a1a;
+    border-radius: 4px;
+    padding: 5px 10px;
+    transition: background 0.3s;
+  }
+
+  .dipol-status.is-dipol {
+    background: #e8f5e9;
+    color: #1b5e20;
+  }
+
+  .dipol-status.no-dipol {
+    background: #fce4ec;
+    color: #880e4f;
+  }
+
+  /* ── CO2 reveal button ── */
+  #reveal-co2-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  #reveal-co2-btn {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.88rem;
+    background: #2a7a2a;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 24px;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: background 0.2s;
+  }
+
+  #reveal-co2-btn:hover { background: #1f5c1f; }
+
+  /* ── CO2 card (hidden initially) ── */
+  #co2-card {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  #co2-card.visible {
+    display: block;
+    opacity: 1;
+  }
+
+  /* ── Snap indicator ── */
+  .snap-hint {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.73rem;
+    color: #888;
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  /* ── Legend ── */
+  .legend {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .legend-esp-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.78rem;
+    color: #555;
+  }
+
+  .esp-label-left  { text-align: right; }
+  .esp-label-right { text-align: left; }
+
+  .legend-dots-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    justify-content: center;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.82rem;
+    color: #555;
+  }
+
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+
+<h1>Molekülpolarität</h1>
+<p class="subtitle">Dipol &amp; Ladungsschwerpunkte</p>
+
+<div class="molecules-wrapper">
+
+  <!-- ══════════════ H2O CARD ══════════════ -->
+  <div class="mol-card" id="h2o-card">
+    <div class="mol-title">
+      <span>H₂O – Wasser</span>
+    </div>
+
+    <canvas id="canvas-h2o" width="760" height="360"></canvas>
+
+    <div class="angle-control">
+      <label>Bindungswinkel</label>
+      <input type="range" id="slider-h2o" min="90" max="180" value="104.5" step="0.5">
+      <span class="angle-value" id="angle-display-h2o">105°</span>
+    </div>
+    <p class="snap-hint">→ Loslassen: springt zurück auf den echten Winkel (104,5°)</p>
+
+    <div class="checkboxes">
+      <label><input type="checkbox" id="cb-h2o-esp" checked> Elektronendichte</label>
+      <label><input type="checkbox" id="cb-h2o-charges" checked> Teilladungen (δ)</label>
+      <label><input type="checkbox" id="cb-h2o-centers" checked> Ladungsschwerpunkte</label>
+      <label><input type="checkbox" id="cb-h2o-dipol"> Dipolpfeil</label>
+    </div>
+
+    <div class="dipol-status" id="status-h2o"></div>
+
+    <div class="legend">
+      <div class="legend-esp-row">
+        <span class="esp-label-left">Hohe Elektronendichte</span>
+        <span style="display:inline-block;width:120px;height:12px;border-radius:6px;background:linear-gradient(to right,#d21010,#ffffff,#0f3cd2);vertical-align:middle;margin:0 8px"></span>
+        <span class="esp-label-right">Niedrige Elektronendichte</span>
+      </div>
+      <div class="legend-dots-row">
+        <div class="legend-item"><span class="legend-dot" style="background:#e53935"></span> Schwerpunkt der negativen Ladung (δ–)</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#1565c0"></span> Schwerpunkt der positiven Ladung (δ+)</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#f57c00; border-radius:0"></span> Dipolpfeil</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ REVEAL BUTTON ══════════════ -->
+  <div id="reveal-co2-wrapper">
+    <button id="reveal-co2-btn">＋ CO₂ zum Vergleich einblenden</button>
+  </div>
+
+  <!-- ══════════════ CO2 CARD ══════════════ -->
+  <div class="mol-card" id="co2-card">
+    <div class="mol-title">
+      <span>CO₂ – Kohlenstoffdioxid</span>
+    </div>
+
+    <canvas id="canvas-co2" width="760" height="360"></canvas>
+
+    <div class="angle-control">
+      <label>Bindungswinkel</label>
+      <input type="range" id="slider-co2" min="90" max="180" value="180" step="0.5">
+      <span class="angle-value" id="angle-display-co2">180°</span>
+    </div>
+    <p class="snap-hint">→ Loslassen: springt zurück auf den echten Winkel (180°)</p>
+
+    <div class="checkboxes">
+      <label><input type="checkbox" id="cb-co2-esp" checked> Elektronendichte</label>
+      <label><input type="checkbox" id="cb-co2-charges" checked> Teilladungen (δ)</label>
+      <label><input type="checkbox" id="cb-co2-centers" checked> Ladungsschwerpunkte</label>
+      <label><input type="checkbox" id="cb-co2-dipol"> Dipolpfeil</label>
+    </div>
+
+    <div class="dipol-status" id="status-co2"></div>
+
+    <div class="legend">
+      <div class="legend-esp-row">
+        <span class="esp-label-left">Hohe Elektronendichte</span>
+        <span style="display:inline-block;width:120px;height:12px;border-radius:6px;background:linear-gradient(to right,#d21010,#ffffff,#0f3cd2);vertical-align:middle;margin:0 8px"></span>
+        <span class="esp-label-right">Niedrige Elektronendichte</span>
+      </div>
+      <div class="legend-dots-row">
+        <div class="legend-item"><span class="legend-dot" style="background:#e53935"></span> Schwerpunkt der negativen Ladung (δ–)</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#1565c0"></span> Schwerpunkt der positiven Ladung (δ+)</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#f57c00; border-radius:0"></span> Dipolpfeil</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end molecules-wrapper -->
+
+<script>
+// ══════════════════════════════════════════════
+//  CONSTANTS & HELPERS
+// ══════════════════════════════════════════════
+const DEG = Math.PI / 180;
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+// Atom sizes
+const R = { O: 32, H: 21, C: 29 };
+
+// Colors
+const COL = {
+  O:  '#e53935',   // red
+  H:  '#bdbdbd',   // light grey
+  C:  '#424242',   // dark grey
+  bond: '#555',
+  negCenter: '#e53935',
+  posCenter: '#1565c0',
+  dipolArrow: '#f57c00',
+  dipolArrowFill: '#ffe0b2',
+};
+
+// ══════════════════════════════════════════════
+//  MOLECULE STATE
+// ══════════════════════════════════════════════
+const molecules = {
+  h2o: {
+    canvasId: 'canvas-h2o',
+    sliderId: 'slider-h2o',
+    angleDisplayId: 'angle-display-h2o',
+    statusId: 'status-h2o',
+    cbEsp: 'cb-h2o-esp',
+    cbCharges: 'cb-h2o-charges',
+    cbCenters: 'cb-h2o-centers',
+    cbDipol: 'cb-h2o-dipol',
+    snapAngle: 104.5,
+    currentAngle: 104.5,
+    displayAngle: 104.5,  // animated display
+    isDragging: false,
+    // spring state
+    springVel: 0,
+    springPos: 104.5,
+    type: 'h2o'
+  },
+  co2: {
+    canvasId: 'canvas-co2',
+    sliderId: 'slider-co2',
+    angleDisplayId: 'angle-display-co2',
+    statusId: 'status-co2',
+    cbEsp: 'cb-co2-esp',
+    cbCharges: 'cb-co2-charges',
+    cbCenters: 'cb-co2-centers',
+    cbDipol: 'cb-co2-dipol',
+    snapAngle: 180,
+    currentAngle: 180,
+    displayAngle: 180,
+    isDragging: false,
+    springVel: 0,
+    springPos: 180,
+    type: 'co2'
+  }
+};
+
+// ══════════════════════════════════════════════
+//  SPRING PHYSICS
+// ══════════════════════════════════════════════
+const SPRING_K   = 0.18;   // stiffness
+const SPRING_D   = 0.55;   // damping
+const SPRING_THR = 0.05;   // threshold to stop
+
+function stepSpring(mol) {
+  if (mol.isDragging) {
+    mol.springPos = mol.currentAngle;
+    mol.springVel = 0;
+    mol.displayAngle = mol.currentAngle;
+    return;
+  }
+  const target = mol.snapAngle;
+  const displacement = mol.springPos - target;
+  const force = -SPRING_K * displacement - SPRING_D * mol.springVel;
+  mol.springVel += force;
+  mol.springPos += mol.springVel;
+
+  if (Math.abs(displacement) < SPRING_THR && Math.abs(mol.springVel) < SPRING_THR) {
+    mol.springPos = target;
+    mol.springVel = 0;
+  }
+  mol.displayAngle = mol.springPos;
+
+  // keep slider in sync
+  const slider = document.getElementById(mol.sliderId);
+  if (slider) slider.value = mol.springPos;
+  const disp = document.getElementById(mol.angleDisplayId);
+  if (disp) disp.textContent = Math.round(mol.springPos) + '°';
+}
+
+// ══════════════════════════════════════════════
+//  DRAWING
+// ══════════════════════════════════════════════
+
+function getMoleculeGeometry(mol) {
+  const canvas = document.getElementById(mol.canvasId);
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2 + 10;
+  const angle = mol.displayAngle;
+
+  if (mol.type === 'h2o') {
+    const bondLen = 108;
+    const halfAngle = (angle / 2) * DEG;
+    // O at center
+    const O  = { x: cx, y: cy };
+    // H atoms spread symmetrically
+    const H1 = { x: cx - bondLen * Math.sin(halfAngle), y: cy + bondLen * Math.cos(halfAngle) };
+    const H2 = { x: cx + bondLen * Math.sin(halfAngle), y: cy + bondLen * Math.cos(halfAngle) };
+    // Negative center: on O
+    const negCenter = { x: O.x, y: O.y };
+    // Positive center: midpoint of H1, H2
+    const posCenter = { x: (H1.x + H2.x) / 2, y: (H1.y + H2.y) / 2 };
+    return { O, H1, H2, negCenter, posCenter };
+  } else {
+    // CO2: C in center, 2 O atoms
+    const bondLen = 118;
+    const halfAngle = (angle / 2) * DEG;
+    const C  = { x: cx, y: cy };
+    const O1 = { x: cx - bondLen * Math.sin(halfAngle), y: cy + bondLen * Math.cos(halfAngle) };
+    const O2 = { x: cx + bondLen * Math.sin(halfAngle), y: cy + bondLen * Math.cos(halfAngle) };
+    // Negative center: midpoint of both O atoms (both carry δ–)
+    const negCenter = { x: (O1.x + O2.x) / 2, y: (O1.y + O2.y) / 2 };
+    // Positive center: on C (carries δ+)
+    const posCenter = { x: C.x, y: C.y };
+    return { C, O1, O2, negCenter, posCenter };
+  }
+}
+
+function getDipolVector(geom) {
+  // vector from neg to pos center
+  return {
+    dx: geom.posCenter.x - geom.negCenter.x,
+    dy: geom.posCenter.y - geom.negCenter.y
+  };
+}
+
+function drawAtom(ctx, x, y, r, color, label, labelColor, labelSize, labelOffsetY = 0) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  const grad = ctx.createRadialGradient(x - r*0.3, y - r*0.3, r*0.1, x, y, r);
+  grad.addColorStop(0, lighten(color, 0.4));
+  grad.addColorStop(1, darken(color, 0.15));
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.strokeStyle = darken(color, 0.3);
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  ctx.fillStyle = labelColor || '#fff';
+  const fontSize = labelSize || Math.round(r * 0.72);
+  ctx.font = `bold ${fontSize}px Georgia`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x, y + labelOffsetY);
+}
+
+function drawBond(ctx, x1, y1, x2, y2, double) {
+  const dx = x2 - x1, dy = y2 - y1;
+  const len = Math.hypot(dx, dy);
+  const nx = -dy / len * 4, ny = dx / len * 4;
+
+  ctx.strokeStyle = COL.bond;
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+
+  if (!double) {
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.moveTo(x1+nx, y1+ny); ctx.lineTo(x2+nx, y2+ny); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1-nx, y1-ny); ctx.lineTo(x2-nx, y2-ny); ctx.stroke();
+  }
+}
+
+function drawCharge(ctx, x, y, label, color) {
+  ctx.fillStyle = color;
+  ctx.font = 'bold 13px Georgia';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x, y);
+}
+
+function drawCenter(ctx, x, y, color, label, labelBelow = false) {
+  // Outer glow
+  const grd = ctx.createRadialGradient(x, y, 2, x, y, 20);
+  grd.addColorStop(0, color + 'aa');
+  grd.addColorStop(1, color + '00');
+  ctx.beginPath();
+  ctx.arc(x, y, 20, 0, Math.PI*2);
+  ctx.fillStyle = grd;
+  ctx.fill();
+
+  // Inner dot
+  ctx.beginPath();
+  ctx.arc(x, y, 9, 0, Math.PI*2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Label
+  ctx.fillStyle = color;
+  ctx.font = 'bold 13px Courier New';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x, y + (labelBelow ? 32 : -32));
+}
+
+function drawDipolArrow(ctx, neg, pos, scale) {
+  if (scale < 0.01) return;
+
+  const dx = pos.x - neg.x;
+  const dy = pos.y - neg.y;
+  const len = Math.hypot(dx, dy);
+  if (len < 1) return;
+
+  const ux = dx / len, uy = dy / len;
+  // Arrow from neg to pos, scaled
+  const arrowLen = len * scale;
+  const mx = (neg.x + pos.x) / 2, my = (neg.y + pos.y) / 2;
+  const ax = mx - ux * arrowLen / 2;
+  const ay = my - uy * arrowLen / 2;
+  const bx = mx + ux * arrowLen / 2;
+  const by = my + uy * arrowLen / 2;
+
+  const headLen = Math.min(18, arrowLen * 0.35);
+  const headAngle = 0.45;
+
+  ctx.save();
+  ctx.strokeStyle = COL.dipolArrow;
+  ctx.fillStyle = COL.dipolArrow;
+  ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round';
+
+  ctx.beginPath();
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(bx, by);
+  ctx.stroke();
+
+  // Head
+  ctx.beginPath();
+  ctx.moveTo(bx, by);
+  const ang = Math.atan2(uy, ux);
+  ctx.lineTo(
+    bx - headLen * Math.cos(ang - headAngle),
+    by - headLen * Math.sin(ang - headAngle)
+  );
+  ctx.lineTo(
+    bx - headLen * Math.cos(ang + headAngle),
+    by - headLen * Math.sin(ang + headAngle)
+  );
+  ctx.closePath();
+  ctx.fill();
+
+  // Small circle at tail (negative end)
+  ctx.beginPath();
+  ctx.arc(ax, ay, 4, 0, Math.PI*2);
+  ctx.fillStyle = COL.dipolArrow;
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function draw(molKey) {
+  const mol = molecules[molKey];
+  const canvas = document.getElementById(mol.canvasId);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  ctx.clearRect(0, 0, W, H);
+
+  const showEsp     = document.getElementById(mol.cbEsp).checked;
+  const showCharges = document.getElementById(mol.cbCharges).checked;
+  const showCenters = document.getElementById(mol.cbCenters).checked;
+  const showDipol   = document.getElementById(mol.cbDipol).checked;
+
+  const geom = getMoleculeGeometry(mol);
+  const { negCenter, posCenter } = geom;
+
+  // ── ESP clouds (drawn first, behind everything)
+  if (showEsp) {
+    let espSources;
+    if (mol.type === 'h2o') {
+      // Bond length 90px → van-der-Waals cloud extends ~2× bond length
+      // O: large negative core. Lone-pair lobe: extra negative source above O.
+      // H: positive sources at H positions.
+      const loneOffset = 60; // px above O for lone-pair lobe
+      espSources = [
+        // O core – kräftiger, kompakteres Sigma
+        { x: geom.O.x,  y: geom.O.y,              charge: -1, strength: 1.3, sigma: 84 },
+        // Lone-pair lobe oberhalb O
+        { x: geom.O.x,  y: geom.O.y - loneOffset,  charge: -1, strength: 0.7, sigma: 70 },
+        // H-Atome – stärker, blaue Wolken gehen von H aus und addieren sich
+        { x: geom.H1.x, y: geom.H1.y,              charge: +1, strength: 1.65, sigma: 96 },
+        { x: geom.H2.x, y: geom.H2.y,              charge: +1, strength: 1.65, sigma: 96 },
+      ];
+    } else {
+      // CO2: C positive, both O negative, symmetric
+      espSources = [
+        { x: geom.C.x,  y: geom.C.y,  charge: +1, strength: 1.1, sigma: 84 },
+        { x: geom.O1.x, y: geom.O1.y, charge: -1, strength: 1.3, sigma: 82 },
+        { x: geom.O2.x, y: geom.O2.y, charge: -1, strength: 1.3, sigma: 82 },
+      ];
+    }
+    drawESPCloud(ctx, W, H, espSources);
+  }
+
+  // ── Dipol magnitude (0–1)
+  const dv = getDipolVector(geom);
+  const separation = Math.hypot(dv.dx, dv.dy);
+  // max separation: halfAngle=45deg, bondLen=90→~63px for h2o
+  const maxSep = mol.type === 'h2o' ? 65 : 100;
+  const dipolScale = Math.min(separation / maxSep, 1);
+
+  // ── Draw bonds first (behind atoms)
+  if (mol.type === 'h2o') {
+    drawBond(ctx, geom.O.x, geom.O.y, geom.H1.x, geom.H1.y, false);
+    drawBond(ctx, geom.O.x, geom.O.y, geom.H2.x, geom.H2.y, false);
+  } else {
+    drawBond(ctx, geom.C.x, geom.C.y, geom.O1.x, geom.O1.y, true);
+    drawBond(ctx, geom.C.x, geom.C.y, geom.O2.x, geom.O2.y, true);
+  }
+
+  // ── Draw atoms
+  if (mol.type === 'h2o') {
+    drawAtom(ctx, geom.O.x,  geom.O.y,  R.O, COL.O, 'O', '#000', undefined, -20);
+    drawAtom(ctx, geom.H1.x, geom.H1.y, R.H, COL.H, 'H', '#333');
+    drawAtom(ctx, geom.H2.x, geom.H2.y, R.H, COL.H, 'H', '#333');
+  } else {
+    drawAtom(ctx, geom.C.x,  geom.C.y,  R.C, COL.C, 'C', '#fff', undefined, -18);
+    drawAtom(ctx, geom.O1.x, geom.O1.y, R.O, COL.O, 'O', '#fff');
+    drawAtom(ctx, geom.O2.x, geom.O2.y, R.O, COL.O, 'O', '#fff');
+  }
+
+  // ── Partial charges
+  if (showCharges) {
+    const offset = 22;
+    if (mol.type === 'h2o') {
+      // O gets δ– above
+      drawCharge(ctx, geom.O.x, geom.O.y - R.O - offset, 'δ–', '#c62828');
+      // H1 gets δ+ (outward)
+      const ang1 = Math.atan2(geom.H1.y - geom.O.y, geom.H1.x - geom.O.x);
+      drawCharge(ctx, geom.H1.x + Math.cos(ang1)*offset, geom.H1.y + Math.sin(ang1)*offset, 'δ+', '#0d47a1');
+      const ang2 = Math.atan2(geom.H2.y - geom.O.y, geom.H2.x - geom.O.x);
+      drawCharge(ctx, geom.H2.x + Math.cos(ang2)*offset, geom.H2.y + Math.sin(ang2)*offset, 'δ+', '#0d47a1');
+    } else {
+      // C gets δ+ above
+      drawCharge(ctx, geom.C.x, geom.C.y - R.C - offset, 'δ+', '#0d47a1');
+      // O1 δ– outside the atom (beyond radius)
+      const ang1 = Math.atan2(geom.O1.y - geom.C.y, geom.O1.x - geom.C.x);
+      drawCharge(ctx, geom.O1.x + Math.cos(ang1)*(R.O + offset), geom.O1.y + Math.sin(ang1)*(R.O + offset), 'δ–', '#c62828');
+      const ang2 = Math.atan2(geom.O2.y - geom.C.y, geom.O2.x - geom.C.x);
+      drawCharge(ctx, geom.O2.x + Math.cos(ang2)*(R.O + offset), geom.O2.y + Math.sin(ang2)*(R.O + offset), 'δ–', '#c62828');
+    }
+  }
+
+  // ── Dipol arrow (draw before centers so centers sit on top)
+  if (showDipol) {
+    drawDipolArrow(ctx, negCenter, posCenter, dipolScale);
+  }
+
+  // ── Charge centers
+  if (showCenters) {
+    drawCenter(ctx, negCenter.x, negCenter.y, COL.negCenter, '', false);
+    drawCenter(ctx, posCenter.x, posCenter.y, COL.posCenter, '', true);
+  }
+
+  // ── Status text
+  const status = document.getElementById(mol.statusId);
+  const isDipol = dipolScale > 0.02;
+  if (isDipol) {
+    status.textContent = '⚡ Dipol – die Ladungsschwerpunkte fallen auseinander.';
+    status.className = 'dipol-status is-dipol';
+  } else {
+    const hint = mol.type === 'h2o'
+      ? 'Kein Dipol – gestrecktes Molekül, Ladungsschwerpunkte fallen zusammen.'
+      : 'Kein Dipol – CO₂ ist linear, die Bindungen heben sich auf.';
+    status.textContent = '✗ ' + hint;
+    status.className = 'dipol-status no-dipol';
+  }
+
+  // update angle display
+  document.getElementById(mol.angleDisplayId).textContent = Math.round(mol.displayAngle) + '°';
+}
+
+// ══════════════════════════════════════════════
+//  COLOR UTILITIES
+// ══════════════════════════════════════════════
+function lighten(hex, amt) {
+  let c = hexToRgb(hex);
+  return `rgb(${Math.min(255,Math.round(c.r+(255-c.r)*amt))},${Math.min(255,Math.round(c.g+(255-c.g)*amt))},${Math.min(255,Math.round(c.b+(255-c.b)*amt))})`;
+}
+function darken(hex, amt) {
+  let c = hexToRgb(hex);
+  return `rgb(${Math.round(c.r*(1-amt))},${Math.round(c.g*(1-amt))},${Math.round(c.b*(1-amt))})`;
+}
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return {r, g, b};
+}
+
+// ══════════════════════════════════════════════
+//  ESP CLOUD DRAWING  (pixel-sampled, realistic)
+// ══════════════════════════════════════════════
+
+// Maps normalized ESP value (-1…+1) → RGB  (red = negative, white = neutral, blue = positive)
+function espColorRGB(v) {
+  v = Math.max(-1, Math.min(1, v));
+  // Power curve: colors stay saturated longer, only narrow white band near 0
+  const vSat = Math.sign(v) * Math.pow(Math.abs(v), 0.38);
+  let r, g, b;
+  if (vSat < 0) {
+    const t = vSat + 1; // 0 = deep red, 1 = white
+    r = Math.round(lerp(205, 255, t));
+    g = Math.round(lerp(10,  255, t));
+    b = Math.round(lerp(10,  255, t));
+  } else {
+    const t = vSat; // 0 = white, 1 = deep blue
+    r = Math.round(lerp(255, 10,  t));
+    g = Math.round(lerp(255, 50,  t));
+    b = Math.round(lerp(255, 215, t));
+  }
+  return [r, g, b];
+}
+
+// espSources: [{ x, y, charge, sigma, strength }]
+function drawESPCloud(ctx, canvasW, canvasH, espSources) {
+  const SCALE = 3;
+  const offW = Math.ceil(canvasW / SCALE);
+  const offH = Math.ceil(canvasH / SCALE);
+
+  const off = document.createElement('canvas');
+  off.width  = offW;
+  off.height = offH;
+  const octx = off.getContext('2d');
+  const imgData = octx.createImageData(offW, offH);
+  const data = imgData.data;
+
+  const sources = espSources.map(s => ({
+    x: s.x, y: s.y, charge: s.charge,
+    strength: s.strength, sig2: 2 * s.sigma * s.sigma
+  }));
+
+  // Peak density for alpha normalisation
+  let maxDensity = 0;
+  for (const s of sources) maxDensity += Math.abs(s.strength);
+
+  for (let py = 0; py < offH; py++) {
+    for (let px = 0; px < offW; px++) {
+      const wx = px * SCALE, wy = py * SCALE;
+      let weightedCharge = 0, totalDensity = 0;
+      for (const s of sources) {
+        const dx = wx - s.x, dy = wy - s.y;
+        const g = s.strength * Math.exp(-(dx*dx + dy*dy) / s.sig2);
+        weightedCharge += s.charge * g;
+        totalDensity   += Math.abs(g);
+      }
+      const espNorm = totalDensity > 0.001
+        ? Math.max(-1, Math.min(1, weightedCharge / totalDensity)) : 0;
+      const alphaNorm = Math.min(totalDensity / (maxDensity * 0.52), 1);
+      // Reduce opacity in neutral/cancellation zone for softer transition
+      const saturationFactor = 0.25 + 0.75 * Math.pow(Math.abs(espNorm), 0.5);
+      const a = Math.round(alphaNorm * alphaNorm * saturationFactor * 240);
+      const [r, g, b] = espColorRGB(espNorm);
+      const idx = (py * offW + px) * 4;
+      data[idx] = r; data[idx+1] = g; data[idx+2] = b; data[idx+3] = a;
+    }
+  }
+  octx.putImageData(imgData, 0, 0);
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(off, 0, 0, canvasW, canvasH);
+  ctx.restore();
+}
+
+
+
+function tick() {
+  stepSpring(molecules.h2o);
+  stepSpring(molecules.co2);
+  draw('h2o');
+  draw('co2');
+  requestAnimationFrame(tick);
+}
+
+// ══════════════════════════════════════════════
+//  EVENT LISTENERS
+// ══════════════════════════════════════════════
+function setupMolecule(molKey) {
+  const mol = molecules[molKey];
+  const slider = document.getElementById(mol.sliderId);
+
+  slider.addEventListener('mousedown',  () => { mol.isDragging = true; });
+  slider.addEventListener('touchstart', () => { mol.isDragging = true; }, { passive: true });
+
+  slider.addEventListener('input', () => {
+    mol.currentAngle = parseFloat(slider.value);
+    mol.springPos = mol.currentAngle;
+    mol.springVel = 0;
+    mol.displayAngle = mol.currentAngle;
+    document.getElementById(mol.angleDisplayId).textContent = Math.round(mol.currentAngle) + '°';
+  });
+
+  slider.addEventListener('mouseup',   () => { mol.isDragging = false; });
+  slider.addEventListener('touchend',  () => { mol.isDragging = false; });
+  slider.addEventListener('mouseleave',() => { if(mol.isDragging) mol.isDragging = false; });
+
+  // Checkboxes
+  [mol.cbEsp, mol.cbCharges, mol.cbCenters, mol.cbDipol].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => draw(molKey));
+  });
+}
+
+// CO2 reveal
+document.getElementById('reveal-co2-btn').addEventListener('click', () => {
+  const card = document.getElementById('co2-card');
+  const btn  = document.getElementById('reveal-co2-btn');
+  card.style.display = 'block';
+  // trigger transition
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      card.classList.add('visible');
+    });
+  });
+  btn.style.display = 'none';
+});
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+setupMolecule('h2o');
+setupMolecule('co2');
+
+// Initial spring positions
+molecules.h2o.springPos = 104.5;
+molecules.co2.springPos = 180;
+
+tick();
+</script>
+</body>
+</html>
