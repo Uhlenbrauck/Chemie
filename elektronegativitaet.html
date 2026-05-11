@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1200">
+<title>Elektronegativität – Interaktive Visualisierung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05101f;--surf1:#0a1828;--surf2:#102038;--surf3:#162848;
+  --brd:#1e3560;--brd2:#2a4880;
+  --txt:#d8e8ff;
+  --acc:#00d4ff;--grn:#00e676;--yel:#ffc400;--red:#ff4466;
+  --fn:'Sora',sans-serif;--fm:'IBM Plex Mono',monospace;
+  --muted:#8aaedd;--dim:#6688bb;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:var(--fn)}
+
+/* HEADER */
+header{display:flex;align-items:center;gap:14px;padding:10px 24px;
+  background:linear-gradient(90deg,#05101f,#0a1828,#05101f);
+  border-bottom:1px solid var(--brd);flex-shrink:0}
+.logo{width:36px;height:36px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#00d4ff 0%,#0044aa 70%);
+  box-shadow:0 0 16px #00d4ff55;flex-shrink:0}
+header h1{font-size:18px;font-weight:700;color:var(--acc);letter-spacing:.06em;text-transform:uppercase}
+.badge{margin-left:auto;font-family:var(--fm);font-size:12px;color:var(--muted);
+  border:1px solid var(--brd);border-radius:6px;padding:3px 12px}
+
+/* TABS */
+.tabbar{display:flex;gap:4px;background:var(--surf1);border-bottom:1px solid var(--brd);
+  padding:8px 20px 0;flex-shrink:0}
+.tbtn{background:none;border:1px solid transparent;border-bottom:none;
+  color:var(--muted);font-family:var(--fn);font-size:14px;font-weight:600;
+  padding:9px 22px;cursor:pointer;border-radius:8px 8px 0 0;transition:all .2s}
+.tbtn:hover{color:var(--txt);background:var(--surf2)}
+.tbtn.on{color:var(--acc);background:var(--bg);border-color:var(--brd)}
+
+.tab{flex:1;display:none;overflow:hidden}
+.tab.on{display:flex}
+body{display:flex;flex-direction:column}
+
+/* SIDEBAR */
+.side{width:290px;flex-shrink:0;background:var(--surf1);border-right:1px solid var(--brd);
+  padding:18px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+.sechd{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--brd);margin-bottom:2px}
+.main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px 24px;gap:14px;overflow:hidden}
+
+/* ATOM CARD */
+.acard{background:var(--surf2);border:1px solid var(--brd);border-radius:12px;padding:14px;
+  display:flex;flex-direction:column;gap:10px}
+.arow{display:flex;align-items:center;gap:12px}
+.adot{width:48px;height:48px;border-radius:50%;border:2.5px solid;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:700;flex-shrink:0;background:var(--bg)}
+.albl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.aen{font-family:var(--fm);font-size:28px;font-weight:600;color:var(--txt);line-height:1}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;
+  background:var(--brd);border-radius:3px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
+  border-radius:50%;cursor:pointer}
+.sA::-webkit-slider-thumb{background:#00d4ff;box-shadow:0 0 8px #00d4ff88}
+.sB::-webkit-slider-thumb{background:#ff4466;box-shadow:0 0 8px #ff446688}
+.slrow{display:flex;justify-content:space-between;font-family:var(--fm);font-size:11px;color:var(--muted);margin-top:2px}
+
+/* SPECTRUM */
+.specbar{height:18px;border-radius:9px;
+  background:linear-gradient(90deg,var(--grn) 0%,var(--grn) 18%,var(--yel) 52%,var(--red) 100%);
+  position:relative;margin-bottom:6px}
+.specmark{position:absolute;top:-6px;width:4px;height:30px;background:#fff;border-radius:2px;
+  box-shadow:0 0 10px rgba(255,255,255,.9);transition:left .35s cubic-bezier(.4,0,.2,1)}
+.speclbls{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+.btbox{background:var(--surf2);border:1px solid var(--brd);border-radius:10px;
+  padding:12px 14px;text-align:center;margin-top:10px;transition:border-color .3s}
+.btname{font-size:18px;font-weight:700;margin-bottom:4px;transition:color .3s}
+.btden{font-family:var(--fm);font-size:26px;font-weight:700;color:var(--txt);margin:6px 0 2px}
+.btdesc{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6}
+
+/* CHECKBOXES */
+.cbrow{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer}
+input[type=checkbox]{accent-color:var(--acc);width:16px;height:16px;cursor:pointer}
+
+/* SELECT */
+select{width:100%;background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  color:var(--txt);font-family:var(--fn);font-size:15px;padding:9px 12px;cursor:pointer;outline:none}
+select:focus{border-color:var(--acc)}
+
+/* MODE BUTTONS */
+.modrow{display:flex;gap:6px}
+.mbtn{flex:1;background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  color:var(--muted);font-family:var(--fn);font-size:12px;font-weight:600;
+  padding:8px 4px;cursor:pointer;transition:all .2s;text-align:center}
+.mbtn:hover{border-color:var(--acc);color:var(--txt)}
+.mbtn.on{background:rgba(0,212,255,.1);border-color:var(--acc);color:var(--acc)}
+
+/* TOGGLES */
+.toggrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.tog{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;
+  color:var(--muted);font-family:var(--fn);font-size:12px;font-weight:500;
+  padding:8px 5px;cursor:pointer;transition:all .2s;text-align:center;line-height:1.3}
+.tog:hover{border-color:var(--brd2);color:var(--txt)}
+.tog.on{background:rgba(0,212,255,.1);border-color:var(--acc);color:var(--acc)}
+
+/* MOL VIEW */
+.molview{flex:1;display:flex;align-items:center;justify-content:center;
+  padding:10px;position:relative;overflow:hidden}
+
+/* INFO STRIP */
+.infostrip{background:var(--surf1);border-top:1px solid var(--brd);
+  padding:12px 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;flex-shrink:0}
+.icell label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--muted);margin-bottom:3px}
+.icell .val{font-size:15px;font-weight:600}
+
+/* COMPARE */
+.cmpwrap{display:flex;width:100%;height:100%}
+.cmppanel{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px;
+  border-right:1px solid var(--brd)}
+.cmppanel:last-child{border-right:none}
+.cmpsel{width:100%;margin-bottom:8px;font-size:13px;padding:7px 10px}
+
+/* QUIZ */
+.quizbox{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
+  background:var(--surf2);border:1px solid var(--brd2);border-radius:14px;
+  padding:18px 24px;text-align:center;min-width:440px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.quizq{font-size:16px;font-weight:600;margin-bottom:12px}
+.quizopts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.qopt{background:var(--surf3);border:1px solid var(--brd);border-radius:8px;
+  color:var(--txt);font-family:var(--fn);font-size:14px;padding:10px 18px;cursor:pointer;transition:all .2s}
+.qopt:hover{border-color:var(--acc)}
+.qopt.correct{background:rgba(0,230,118,.15);border-color:var(--grn);color:var(--grn)}
+.qopt.wrong{background:rgba(255,68,102,.15);border-color:var(--red);color:var(--red)}
+.quizres{margin-top:10px;font-size:14px;color:var(--muted);line-height:1.5}
+.qnext{margin-top:10px;background:var(--acc);border:none;color:#000;
+  font-family:var(--fn);font-size:13px;font-weight:700;padding:8px 22px;border-radius:8px;cursor:pointer}
+
+.gexplain{max-width:520px;font-size:15px;color:var(--txt);text-align:center;line-height:1.7;min-height:44px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"></div>
+  <h1>Elektronegativität &amp; Bindungstypen</h1>
+  <div class="badge">Chemie · Klasse 9 · NRW</div>
+</header>
+
+<div class="tabbar">
+  <button class="tbtn on" onclick="switchTab('g')">⚛ Molekül A–B</button>
+  <button class="tbtn" onclick="switchTab('m')">🔬 Molekülauswahl</button>
+</div>
+
+<!-- ═══════════ GENERIC TAB ═══════════ -->
+<div class="tab on" id="tg">
+  <div class="side">
+    <div class="sechd">Atome &amp; Elektronegativität</div>
+    <div class="acard">
+      <div class="arow">
+        <div class="adot" id="dotA" style="color:#00d4ff;border-color:#00d4ff">A</div>
+        <div>
+          <div class="albl">Atom A</div>
+          <div class="aen" id="enAval">2,0</div>
+        </div>
+      </div>
+      <input type="range" class="sA" id="slA" min="0.5" max="4.0" step="0.05" value="2.0" oninput="updateG()">
+      <div class="slrow"><span>0,5</span><span style="color:var(--dim)">EN (Pauling)</span><span>4,0</span></div>
+    </div>
+    <div class="acard">
+      <div class="arow">
+        <div class="adot" id="dotB" style="color:#ff4466;border-color:#ff4466">B</div>
+        <div>
+          <div class="albl">Atom B</div>
+          <div class="aen" id="enBval">3,5</div>
+        </div>
+      </div>
+      <input type="range" class="sB" id="slB" min="0.5" max="4.0" step="0.05" value="3.5" oninput="updateG()">
+      <div class="slrow"><span>0,5</span><span style="color:var(--dim)">EN (Pauling)</span><span>4,0</span></div>
+    </div>
+    <div>
+      <div class="sechd">Bindungstyp-Spektrum</div>
+      <div class="specbar"><div class="specmark" id="specmark"></div></div>
+      <div class="speclbls"><span>Unpolar kovalent</span><span>Polar kovalent</span><span>Ionenbindung</span></div>
+      <div class="btbox" id="btbox">
+        <div class="btname" id="btname">–</div>
+        <div class="btden" id="btden">ΔEN = –</div>
+        <div class="btdesc" id="btdesc"></div>
+      </div>
+    </div>
+    <div style="background:var(--surf2);border:1px solid var(--brd);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px">
+      <div class="sechd" style="border:none;margin-bottom:0;padding-bottom:4px">Anzeigeoptionen</div>
+      <label class="cbrow"><input type="checkbox" id="gDelta" checked onchange="updateG()"> δ+/δ− anzeigen</label>
+    </div>
+  </div>
+  <div class="main">
+    <svg id="svgG" style="width:100%;max-width:600px;overflow:visible" viewBox="0 0 600 280"></svg>
+    <div class="gexplain" id="gExplain"></div>
+  </div>
+</div>
+
+<!-- ═══════════ MOLECULE TAB ═══════════ -->
+<div class="tab" id="tm">
+  <div class="side">
+    <div>
+      <div class="sechd">Molekül wählen</div>
+      <select id="molSel" onchange="updateM()">
+        <option value="H2O">H₂O – Wasser</option>
+        <option value="NaCl">NaCl – Natriumchlorid</option>
+        <option value="KBr">KBr – Kaliumbromid</option>
+        <option value="MgCl2">MgCl₂ – Magnesiumchlorid</option>
+        <option value="PCl3">PCl₃ – Phosphortrichlorid</option>
+        <option value="Cl2">Cl₂ – Dichlor</option>
+        <option value="HF">HF – Fluorwasserstoff</option>
+        <option value="HBr">HBr – Bromwasserstoff</option>
+        <option value="CH4">CH₄ – Methan</option>
+        <option value="CH3Cl">CH₃Cl – Chlormethan</option>
+      </select>
+    </div>
+    <div>
+      <div class="sechd">Modus</div>
+      <div class="modrow">
+        <button class="mbtn on" id="mNormal" onclick="setMode('normal')">Normal</button>
+        <button class="mbtn" id="mQuiz" onclick="setMode('quiz')">Quiz</button>
+        <button class="mbtn" id="mCmp" onclick="setMode('cmp')">Vergleich</button>
+      </div>
+    </div>
+    <div>
+      <div class="sechd">Anzeigeoptionen</div>
+      <div class="toggrid">
+        <button class="tog on"  id="tEN"    onclick="tog('en')">EN-Werte</button>
+        <button class="tog on"  id="tDelta" onclick="tog('delta')">δ+/δ−</button>
+        <button class="tog"     id="tLone"  onclick="tog('lone')">Freie EP</button>
+        <button class="tog"     id="tAngle" onclick="tog('angle')">Winkel</button>
+        <button class="tog on"  id="tDbond" onclick="tog('dbond')">Bind.-Dipol</button>
+        <button class="tog on"  id="tDmol"  onclick="tog('dmol')">Mol.-Dipol</button>
+        <button class="tog"     id="tBcol"  onclick="tog('bcol')">Bind.-Farben</button>
+        <button class="tog on"  id="tInfo"  onclick="tog('info')">Infobox</button>
+        <button class="tog"     id="tWedge" onclick="tog('wedge')">Keilstrich</button>
+        <button class="tog on"  id="tDen"   onclick="tog('den')">ΔEN-Werte</button>
+      </div>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+    <div class="molview" id="molView"></div>
+    <div class="infostrip" id="infoStrip">
+      <div class="icell"><label>Molekül</label><div class="val" id="iName">–</div></div>
+      <div class="icell"><label>Geometrie</label><div class="val" id="iGeo">–</div></div>
+      <div class="icell"><label>Bindungstyp(en)</label><div class="val" id="iBtype">–</div></div>
+      <div class="icell"><label>Molekülpolarität</label><div class="val" id="iPol">–</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── EN values (Pauling) ── */
+const EN={H:2.1,C:2.5,N:3.0,O:3.5,F:4.0,Na:0.9,Mg:1.2,P:2.1,Cl:3.0,K:0.8,Br:2.8};
+const COL={H:'#aaaaaa',C:'#888888',N:'#5588ff',O:'#ff4433',F:'#00cc55',
+           Na:'#bb55ff',Mg:'#33bb44',P:'#ff8811',Cl:'#44cc44',K:'#dd77ff',Br:'#cc4400'};
+const BRAD={H:22,C:28,N:27,O:27,F:25,Na:33,Mg:30,P:28,Cl:28,K:34,Br:30};
+
+function dEN(sA,sB){return Math.abs((EN[sA]||0)-(EN[sB]||0))}
+function bType(d,over){if(over)return over;if(d<0.4)return'np';if(d<1.7)return'pol';return'ion'}
+function bCol(t){return t==='np'?'var(--grn)':t==='pol'?'var(--yel)':'var(--red)'}
+function bLabel(t){return t==='np'?'Unpolare Kovalenzbindung':t==='pol'?'Polare Kovalenzbindung':'Ionenbindung'}
+function fmt(v){return v.toFixed(1).replace('.',',')}
+
+const D2R=Math.PI/180;
+
+/* ── Molecule data ── */
+/* atoms: {s,x,y,lp:[math angles for lone pairs],charge?}
+   bonds: {a,b,over?}
+   angle: {c,deg} or null
+   dipole: [x1,y1,x2,y2] or null
+   wedge: [{bond,type:'wedge'|'dash'}]            */
+const MOLS={
+  H2O:{name:'Wasser',formula:'H₂O',geo:'gewinkelt (104,5°)',pol:'polar',
+    info:'Zwei polare O–H-Bindungen heben sich wegen des Winkels NICHT auf → polares Molekül.',
+    atoms:[{s:'O',x:250,y:145,lp:[128,52]},{s:'H',x:168,y:218,lp:[]},{s:'H',x:332,y:218,lp:[]}],
+    bonds:[{a:0,b:1},{a:0,b:2}],angle:{c:0,deg:104.5},dipole:[250,230,250,108],wedge:[]},
+
+  NaCl:{name:'Natriumchlorid',formula:'NaCl',geo:'Ionenpaar (linear)',pol:'Ionenverbindung',
+    info:'ΔEN = 2,1 → Ionenbindung: Na gibt 1 Elektron vollständig an Cl ab → Na⁺ und Cl⁻.',
+    atoms:[{s:'Na',x:145,y:195,lp:[],charge:+1},{s:'Cl',x:355,y:195,lp:[90,30,-30,-90],charge:-1}],
+    bonds:[{a:0,b:1,over:'ion'}],angle:null,dipole:null,wedge:[]},
+
+  KBr:{name:'Kaliumbromid',formula:'KBr',geo:'Ionenpaar (linear)',pol:'Ionenverbindung',
+    info:'ΔEN = 2,0 → Ionenbindung: K gibt 1 Elektron an Br ab → K⁺ und Br⁻.',
+    atoms:[{s:'K',x:145,y:195,lp:[],charge:+1},{s:'Br',x:355,y:195,lp:[90,30,-30,-90],charge:-1}],
+    bonds:[{a:0,b:1,over:'ion'}],angle:null,dipole:null,wedge:[]},
+
+  MgCl2:{name:'Magnesiumchlorid',formula:'MgCl₂',geo:'linear (ionisch)',pol:'Ionenverbindung',
+    info:'ΔEN ≈ 1,8 → Ionenbindung: Mg gibt je 1 Elektron an jedes Cl ab → Mg²⁺ + 2 Cl⁻.',
+    atoms:[
+      {s:'Cl',x:88,y:195,lp:[90,155,205,270],charge:-1},
+      {s:'Mg',x:250,y:195,lp:[],charge:+2},
+      {s:'Cl',x:412,y:195,lp:[90,25,-25,-90],charge:-1}],
+    bonds:[{a:1,b:0,over:'ion'},{a:1,b:2,over:'ion'}],
+    angle:{c:1,deg:180},dipole:null,wedge:[]},
+
+  PCl3:{name:'Phosphortrichlorid',formula:'PCl₃',geo:'trigonal-pyramidal (~100°)',pol:'polar',
+    info:'3 polare P–Cl-Bindungen + 1 freies EP an P → pyramidaler Bau → polares Molekül.',
+    atoms:[
+      {s:'P',x:250,y:165,lp:[90]},
+      {s:'Cl',x:112,y:285,lp:[150,215,275]},
+      {s:'Cl',x:250,y:320,lp:[0,180,270]},
+      {s:'Cl',x:388,y:285,lp:[30,-35,270]}],
+    bonds:[{a:0,b:1},{a:0,b:2},{a:0,b:3}],
+    angle:{c:0,deg:100},dipole:[250,148,250,305],wedge:[]},
+
+  Cl2:{name:'Dichlor',formula:'Cl₂',geo:'linear',pol:'unpolar',
+    info:'ΔEN = 0 → unpolare Kovalenzbindung: beide Cl gleich EN → kein Dipolmoment.',
+    atoms:[{s:'Cl',x:155,y:195,lp:[90,180,270]},{s:'Cl',x:345,y:195,lp:[90,0,270]}],
+    bonds:[{a:0,b:1}],angle:null,dipole:null,wedge:[]},
+
+  HF:{name:'Fluorwasserstoff',formula:'HF',geo:'linear',pol:'stark polar',
+    info:'ΔEN = 1,9 → stark polare Kovalenzbindung (kein Ionengitter – HF ist ein Molekül!).',
+    atoms:[{s:'H',x:150,y:195,lp:[]},{s:'F',x:350,y:195,lp:[90,0,270]}],
+    bonds:[{a:0,b:1,over:'pol'}],angle:null,dipole:[182,195,322,195],wedge:[]},
+
+  HBr:{name:'Bromwasserstoff',formula:'HBr',geo:'linear',pol:'polar',
+    info:'ΔEN = 0,7 → polare Kovalenzbindung; Bindungsdipol zeigt von H nach Br.',
+    atoms:[{s:'H',x:150,y:195,lp:[]},{s:'Br',x:350,y:195,lp:[90,0,270]}],
+    bonds:[{a:0,b:1}],angle:null,dipole:[182,195,320,195],wedge:[]},
+
+  CH4:{name:'Methan',formula:'CH₄',geo:'tetraedrisch (109,5°)',pol:'unpolar',
+    info:'Alle C–H-Bindungen nahezu unpolar (ΔEN ≈ 0,4); symmetrischer Bau → kein Moleküldipol.',
+    atoms:[
+      {s:'C',x:250,y:200,lp:[]},
+      {s:'H',x:250,y:95,lp:[]},
+      {s:'H',x:358,y:262,lp:[]},
+      {s:'H',x:142,y:262,lp:[]},
+      {s:'H',x:250,y:320,lp:[]}],
+    bonds:[{a:0,b:1},{a:0,b:2},{a:0,b:3},{a:0,b:4}],
+    angle:{c:0,deg:109.5},dipole:null,
+    wedge:[{bond:2,type:'wedge'},{bond:3,type:'dash'}]},
+
+  CH3Cl:{name:'Chlormethan',formula:'CH₃Cl',geo:'tetraedrisch (verzerrt)',pol:'polar',
+    info:'C–Cl polar (ΔEN = 0,5); C–H nahezu unpolar; asymmetrischer Bau → Moleküldipol Richtung Cl.',
+    atoms:[
+      {s:'C',x:250,y:200,lp:[]},
+      {s:'H',x:250,y:95,lp:[]},
+      {s:'H',x:358,y:262,lp:[]},
+      {s:'H',x:142,y:262,lp:[]},
+      {s:'Cl',x:250,y:322,lp:[0,180,270]}],
+    bonds:[{a:0,b:1},{a:0,b:2},{a:0,b:3},{a:0,b:4}],
+    angle:{c:0,deg:109.5},dipole:[250,176,250,306],
+    wedge:[{bond:2,type:'wedge'},{bond:3,type:'dash'}]}
+};
+
+/* ── State ── */
+const ST={
+  mol:'H2O', mol2:'HF', mode:'normal',
+  o:{en:true,delta:true,lone:false,angle:false,dbond:true,dmol:true,bcol:false,info:true,wedge:false,den:true},
+  quiz:{done:false,correct:false}
+};
+
+/* ════════════════════ GENERIC TAB ════════════════════ */
+function updateG(){
+  const enA=parseFloat(document.getElementById('slA').value);
+  const enB=parseFloat(document.getElementById('slB').value);
+  document.getElementById('enAval').textContent=fmt(enA);
+  document.getElementById('enBval').textContent=fmt(enB);
+  const d=Math.abs(enA-enB);
+  const type=d<0.4?'np':d<1.7?'pol':'ion';
+
+  // Spectrum marker – map ΔEN 0..3.5 to 0..100%
+  const pct=Math.min(d/3.5,1)*100;
+  document.getElementById('specmark').style.left=`calc(${pct}% - 2px)`;
+
+  const box=document.getElementById('btbox');
+  const col=bCol(type);
+  box.style.borderColor=col;
+  const nameEl=document.getElementById('btname');
+  nameEl.textContent=bLabel(type);
+  nameEl.style.color=col;
+  document.getElementById('btden').textContent=`ΔEN = ${fmt(d)}`;
+
+  const descs={
+    np:'Beide Atome ziehen die Bindungselektronen gleich stark an → Elektronen liegen in der Mitte.',
+    pol:'Das elektronegativere Atom zieht die Bindungselektronen stärker an → Partialladungen δ+/δ− entstehen.',
+    ion:'Das Elektron wird vollständig übertragen. Es entstehen ein Kation (+) und ein Anion (−).'
+  };
+  document.getElementById('btdesc').textContent=descs[type];
+
+  drawGeneric(enA,enB,d,type);
+}
+
+function drawGeneric(enA,enB,d,type){
+  const svg=document.getElementById('svgG');
+  const W=600,H=280;
+  // ~70% of original distance (was 160–440 = 280px gap), now ~196px gap
+  const cx_=300, halfGap=98;
+  const ax=cx_-halfGap, bx=cx_+halfGap, cy=132;
+  const rA=42, rB=42;
+  const showDelta=document.getElementById('gDelta').checked;
+  const ionic=(type==='ion');
+  const polar=(type==='pol');
+  const moreENisB = enB >= enA;
+
+  // Electron shift: nonlinear so electrons are close to the atom just before ionic threshold
+  // Max shift ≈ half-gap minus radius (≈56px) at d→1.7
+  let shift=0;
+  if(polar){
+    const t=Math.pow((d-0.4)/1.3, 1.4); // 0..1 over polar range, accelerates near threshold
+    shift=(moreENisB?1:-1)*Math.min(t*60, 52);
+  }
+
+  let html='';
+
+  // Background electron density cloud (covalent only)
+  if(!ionic){
+    const ec=cx_+shift;
+    html+=`<defs>
+      <radialGradient id="edensity" cx="${((ec)/W*100).toFixed(1)}%" cy="${(cy/H*100).toFixed(1)}%" r="18%">
+        <stop offset="0%" stop-color="#00d4ff" stop-opacity="${0.15+(d/4)*0.15}"/>
+        <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="${ec}" cy="${cy}" rx="100" ry="44" fill="url(#edensity)"/>`;
+  }
+
+  // Bond line or ionic dashed
+  if(ionic){
+    html+=`<line x1="${ax+rA+4}" y1="${cy}" x2="${bx-rB-4}" y2="${cy}"
+             stroke="var(--red)" stroke-width="2" stroke-dasharray="8 6" opacity="0.4"/>`;
+  } else {
+    html+=`<line x1="${ax+rA+2}" y1="${cy}" x2="${bx-rB-2}" y2="${cy}"
+             stroke="var(--dim)" stroke-width="3" stroke-linecap="round"/>`;
+    // Binding electron pair (2 dots), shifted toward higher EN atom
+    const epx=cx_+shift, epy=cy;
+    html+=`<circle cx="${epx}" cy="${(epy-8).toFixed(1)}" r="4.5" fill="#ffffff" opacity="0.92"/>
+           <circle cx="${epx}" cy="${(epy+8).toFixed(1)}" r="4.5" fill="#ffffff" opacity="0.92"/>`;
+  }
+
+  // Atom A
+  html+=`<circle cx="${ax}" cy="${cy}" r="${rA}" fill="var(--bg)" stroke="var(--acc)" stroke-width="2.5"/>
+         <text x="${ax}" y="${cy+1}" fill="var(--acc)" font-size="20" font-weight="700"
+           text-anchor="middle" dominant-baseline="middle" font-family="Sora,sans-serif">A</text>`;
+
+  // Atom B
+  html+=`<circle cx="${bx}" cy="${cy}" r="${rB}" fill="var(--bg)" stroke="var(--red)" stroke-width="2.5"/>
+         <text x="${bx}" y="${cy+1}" fill="var(--red)" font-size="20" font-weight="700"
+           text-anchor="middle" dominant-baseline="middle" font-family="Sora,sans-serif">B</text>`;
+
+  // Ionic charges: higher EN → anion (−), lower EN → cation (+)
+  // Lone pairs at 0°, 90°, 180°, 270° (right, top, left, bottom)
+  if(ionic){
+    const catX=moreENisB?ax:bx, anX=moreENisB?bx:ax;
+    const catCol=moreENisB?'var(--acc)':'var(--red)';
+    const anCol =moreENisB?'var(--red)':'var(--acc)';
+    const chargeR=rA+28;
+
+    // Cation: circle + plus – NE position (45°), clear of atom edge
+    // neOff along each axis: distance from center = neOff*√2 ≈ 82px > rA(42)+circleR(22)+gap(8)
+    const neOff=58, cR=16;
+    html+=`<circle cx="${catX+neOff}" cy="${cy-neOff}" r="${cR}" fill="var(--bg)" stroke="${catCol}" stroke-width="2.5"/>
+           <text x="${catX+neOff}" y="${cy-neOff+1}" fill="${catCol}" font-size="26" font-weight="700"
+             text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono">+</text>`;
+    // Anion: circle + minus – NE position (45°)
+    html+=`<circle cx="${anX+neOff}" cy="${cy-neOff}" r="${cR}" fill="var(--bg)" stroke="${anCol}" stroke-width="2.5"/>
+           <text x="${anX+neOff}" y="${cy-neOff+1}" fill="${anCol}" font-size="26" font-weight="700"
+             text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono">−</text>`;
+
+    // Lone pairs on anion at 0°, 90°, 180°, 270°
+    for(const ang of[0,90,180,270]){
+      const dist=rB+15;
+      const lx=anX+dist*Math.cos(ang*D2R), ly=cy-dist*Math.sin(ang*D2R);
+      const pa=ang+90, sp=5;
+      const px3=sp*Math.cos(pa*D2R), py3=-sp*Math.sin(pa*D2R);
+      html+=`<circle cx="${(lx+px3).toFixed(1)}" cy="${(ly+py3).toFixed(1)}" r="3.5" fill="${anCol}" opacity="0.88"/>
+             <circle cx="${(lx-px3).toFixed(1)}" cy="${(ly-py3).toFixed(1)}" r="3.5" fill="${anCol}" opacity="0.88"/>`;
+    }
+  }
+
+  // Delta charges: larger, with circle background
+  if(showDelta && polar){
+    const dPlusX =moreENisB?ax:bx, dMinusX=moreENisB?bx:ax;
+    const dPlusCol='var(--acc)', dMinusCol='var(--red)';
+    html+=`<circle cx="${dPlusX}"  cy="${cy-rA-26}" r="16" fill="var(--bg)" stroke="${dPlusCol}" stroke-width="1.5" opacity="0.5"/>
+           <text x="${dPlusX}"  y="${cy-rA-26+1}" fill="${dPlusCol}" font-size="20" font-weight="700"
+             text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono">δ+</text>`;
+    html+=`<circle cx="${dMinusX}" cy="${cy-rB-26}" r="16" fill="var(--bg)" stroke="${dMinusCol}" stroke-width="1.5" opacity="0.5"/>
+           <text x="${dMinusX}" y="${cy-rB-26+1}" fill="${dMinusCol}" font-size="20" font-weight="700"
+             text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono">δ−</text>`;
+  }
+
+  // EN labels below atoms (larger, brighter)
+  html+=`<text x="${ax}" y="${cy+rA+22}" fill="var(--txt)" font-size="15" font-weight="600" text-anchor="middle"
+           font-family="IBM Plex Mono">EN = ${fmt(enA)}</text>`;
+  html+=`<text x="${bx}" y="${cy+rB+22}" fill="var(--txt)" font-size="15" font-weight="600" text-anchor="middle"
+           font-family="IBM Plex Mono">EN = ${fmt(enB)}</text>`;
+
+  // Dipole arrow: from less EN → more EN
+  if(polar && showDelta){
+    const dipStart=moreENisB?ax+rA+18:bx-rB-18;
+    const dipEnd  =moreENisB?bx-rB-12:ax+rA+12;
+    const yDip=cy+68;
+    html+=arrowSVG(dipStart,yDip,dipEnd,yDip,18,'var(--yel)');
+    html+=`<text x="${(dipStart+dipEnd)/2}" y="${yDip+18}" fill="var(--yel)" font-size="13"
+             text-anchor="middle" font-family="Sora,sans-serif">Bindungsdipol</text>`;
+  }
+
+  svg.innerHTML=html;
+
+  // Explanation text – clean and correct
+  const moreAtom=moreENisB?'B':'A', lessAtom=moreENisB?'A':'B';
+  const moreEN_=moreENisB?enB:enA, lessEN_=moreENisB?enA:enB;
+  const expls={
+    np:'Die Elektronen liegen genau in der Mitte – beide Atome ziehen gleich stark an. Keine Partialladungen.',
+    pol:`Atom ${moreAtom} (EN = ${fmt(moreEN_)}) ist elektronegativer als Atom ${lessAtom} (EN = ${fmt(lessEN_)}) → zieht die Elektronen zu sich → δ− an ${moreAtom}, δ+ an ${lessAtom}.`,
+    ion:`ΔEN = ${fmt(d)}: Atom ${moreAtom} (EN = ${fmt(moreEN_)}) zieht das Elektron vollständig von ${lessAtom} ab → ${lessAtom}⁺ und ${moreAtom}⁻ entstehen. Kein gemeinsames Elektronenpaar mehr.`
+  };
+  document.getElementById('gExplain').textContent=expls[type];
+}
+
+function arrowSVG(x1,y1,x2,y2,size,col){
+  const dx=x2-x1,dy=y2-y1,l=Math.sqrt(dx*dx+dy*dy);
+  if(l<1)return'';
+  const nx=dx/l,ny=dy/l,px=-ny,py=nx,w=size*0.4;
+  const bx=x2-nx*size,by=y2-ny*size;
+  return`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${(x2-nx*size*0.6).toFixed(1)}" y2="${(y2-ny*size*0.6).toFixed(1)}" stroke="${col}" stroke-width="2.5" stroke-linecap="round"/>
+    <polygon points="${x2.toFixed(1)},${y2.toFixed(1)} ${(bx+px*w).toFixed(1)},${(by+py*w).toFixed(1)} ${(bx-px*w).toFixed(1)},${(by-py*w).toFixed(1)}" fill="${col}"/>`;
+}
+
+/* ════════════════════ MOLECULE RENDERER ════════════════════ */
+function molSVG(key, opts, vbW=500, vbH=380){
+  const m=MOLS[key];
+  if(!m) return '';
+  const A=m.atoms, B=m.bonds;
+  let s='';
+
+  // pre-compute bond types
+  const btypes=B.map(b=>{
+    const d=dEN(A[b.a].s,A[b.b].s);
+    return{t:bType(d,b.over),d};
+  });
+
+  // bonds
+  B.forEach((b,bi)=>{
+    const a=A[b.a],bB=A[b.b];
+    const bt=btypes[bi];
+    const sc=opts.bcol?bCol(bt.t):'#2a4880';
+    const winfo=opts.wedge?(m.wedge.find(w=>w.bond===bi)||null):null;
+
+    if(bt.t==='ion'){
+      const dx=bB.x-a.x,dy=bB.y-a.y,l=Math.sqrt(dx*dx+dy*dy);
+      const nx=dx/l,ny=dy/l;
+      const rA=BRAD[a.s]||28,rBr=BRAD[bB.s]||28;
+      s+=`<line x1="${(a.x+nx*(rA+4)).toFixed(1)}" y1="${(a.y+ny*(rA+4)).toFixed(1)}"
+               x2="${(bB.x-nx*(rBr+4)).toFixed(1)}" y2="${(bB.y-ny*(rBr+4)).toFixed(1)}"
+               stroke="var(--red)" stroke-width="2" stroke-dasharray="7 5" opacity="0.4"/>`;
+    } else if(winfo&&winfo.type==='wedge'){
+      const dx=bB.x-a.x,dy=bB.y-a.y,l=Math.sqrt(dx*dx+dy*dy);
+      const nx=dx/l,ny=dy/l,px=-ny,py=nx,w=7;
+      const ex=bB.x-nx*5,ey=bB.y-ny*5;
+      s+=`<polygon points="${a.x.toFixed(1)},${a.y.toFixed(1)} ${(ex+px*w).toFixed(1)},${(ey+py*w).toFixed(1)} ${(ex-px*w).toFixed(1)},${(ey-py*w).toFixed(1)}" fill="${sc}" opacity="0.85"/>`;
+    } else if(winfo&&winfo.type==='dash'){
+      s+=`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${bB.x.toFixed(1)}" y2="${bB.y.toFixed(1)}"
+               stroke="${sc}" stroke-width="3" stroke-dasharray="5 4" stroke-linecap="round"/>`;
+    } else {
+      s+=`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${bB.x.toFixed(1)}" y2="${bB.y.toFixed(1)}"
+               stroke="${sc}" stroke-width="3" stroke-linecap="round"/>`;
+      // binding electron pair, shifted toward more EN atom
+      const sA=A[b.a].s,sB=A[b.b].s;
+      const enA=EN[sA]||0,enB=EN[sB]||0;
+      let t=0.5;
+      if(bt.t==='pol'){
+        const shift2=Math.min((bt.d-0.4)/1.3,1)*0.3;
+        t=enA<enB?0.5+shift2:0.5-shift2;
+      }
+      const dx=bB.x-a.x,dy=bB.y-a.y,l=Math.sqrt(dx*dx+dy*dy);
+      if(l>1){
+        const px=-dy/l,py=dx/l;
+        const ex=a.x+t*dx,ey=a.y+t*dy,sp=5.5;
+        s+=`<circle cx="${(ex+px*sp).toFixed(1)}" cy="${(ey+py*sp).toFixed(1)}" r="3.8" fill="#ffffff" opacity="0.88"/>
+            <circle cx="${(ex-px*sp).toFixed(1)}" cy="${(ey-py*sp).toFixed(1)}" r="3.8" fill="#ffffff" opacity="0.88"/>`;
+      }
+    }
+
+    // ΔEN label
+    if(opts.den&&bt.t!=='ion'){
+      const mx=(a.x+bB.x)/2,my=(a.y+bB.y)/2;
+      const dx=bB.x-a.x,dy=bB.y-a.y,l=Math.sqrt(dx*dx+dy*dy);
+      const ox=-(dy/l)*16,oy=(dx/l)*16;
+      s+=`<text x="${(mx+ox).toFixed(1)}" y="${(my+oy).toFixed(1)}" fill="var(--muted)"
+               font-size="12" text-anchor="middle" dominant-baseline="middle"
+               font-family="IBM Plex Mono,monospace">ΔEN=${fmt(bt.d)}</text>`;
+    }
+
+    // bond dipole arrow
+    if(opts.dbond&&bt.t==='pol'){
+      const sA=A[b.a].s,sB=A[b.b].s;
+      const enA=EN[sA]||0,enB=EN[sB]||0;
+      const moreEN=enA>enB?b.a:b.b;
+      const lessEN=enA>enB?b.b:b.a;
+      const ta=A[lessEN],tb=A[moreEN];
+      const dx=tb.x-ta.x,dy=tb.y-ta.y,l=Math.sqrt(dx*dx+dy*dy);
+      const nx=dx/l,ny=dy/l,px=-ny,py=nx;
+      const off=13;
+      s+=arrowSVG(ta.x+nx*(BRAD[ta.s]||28)+6+px*off,ta.y+ny*(BRAD[ta.s]||28)+6+py*off,
+                  tb.x-nx*(BRAD[tb.s]||28)-6+px*off,tb.y-ny*(BRAD[tb.s]||28)-6+py*off,12,'var(--yel)');
+    }
+  });
+
+  // atoms
+  A.forEach((a,i)=>{
+    const r=BRAD[a.s]||28;
+    const col=COL[a.s]||'#888';
+    const ionic=btypes.some(bt=>bt.t==='ion');
+    // glow for charged atoms
+    const charge=a.charge;
+    if(charge!==undefined&&ionic){
+      const gc=charge>0?'#00d4ff':'#ff4466';
+      s+=`<circle cx="${a.x}" cy="${a.y}" r="${r+6}" fill="${gc}" opacity="0.15"/>`;
+    }
+    s+=`<circle cx="${a.x}" cy="${a.y}" r="${r}" fill="var(--bg)" stroke="${col}" stroke-width="2.5"/>`;
+    s+=`<text x="${a.x}" y="${a.y+1}" fill="${col}" font-size="${r>25?15:13}" font-weight="700"
+           text-anchor="middle" dominant-baseline="middle" font-family="Sora,sans-serif">${a.s}</text>`;
+
+    // EN label
+    if(opts.en){
+      s+=`<text x="${a.x}" y="${a.y+r+16}" fill="var(--muted)" font-size="12" text-anchor="middle"
+             font-family="IBM Plex Mono,monospace">${fmt(EN[a.s]||0)}</text>`;
+    }
+
+    // ionic charges
+    if(ionic&&charge!==undefined){
+      const chStr=charge===+1?'⁺':charge===+2?'²⁺':charge===-1?'⁻':'';
+      const cc=charge>0?'var(--acc)':'var(--red)';
+      s+=`<text x="${a.x+r*0.65}" y="${a.y-r*0.65}" fill="${cc}" font-size="16" font-weight="700"
+             text-anchor="middle" font-family="IBM Plex Mono,monospace">${chStr}</text>`;
+    }
+
+    // delta charges
+    if(opts.delta&&!btypes.every(bt=>bt.t==='ion')&&!btypes.every(bt=>bt.t==='np')){
+      // sum bond polarities toward this atom
+      let totalDelta=0;
+      B.forEach((b2,bi2)=>{
+        const bt=btypes[bi2];
+        if(bt.t!=='pol')return;
+        const sA=A[b2.a].s,sB2=A[b2.b].s;
+        const enA=EN[sA]||0,enB2=EN[sB2]||0;
+        if(b2.b===i&&enA<enB2) totalDelta+=bt.d;
+        else if(b2.a===i&&enB2<enA) totalDelta+=bt.d;
+      });
+      if(Math.abs(totalDelta)>0.05){
+        const isMore=totalDelta>0;
+        const sym=isMore?'δ−':'δ+';
+        const col2=isMore?'var(--red)':'var(--acc)';
+        s+=`<text x="${a.x-r*0.8}" y="${a.y-r-6}" fill="${col2}" font-size="15" font-weight="600"
+               text-anchor="middle" font-family="IBM Plex Mono,monospace">${sym}</text>`;
+      }
+    }
+
+    // lone pairs
+    if(opts.lone&&a.lp&&!btypes.every(bt=>bt.t==='ion')){
+      a.lp.forEach(ang=>{
+        const dist=r+13;
+        const cx2=a.x+dist*Math.cos(ang*D2R),cy2=a.y-dist*Math.sin(ang*D2R);
+        const pa=ang+90,sp=4.5;
+        const lx1=cx2+sp*Math.cos(pa*D2R),ly1=cy2-sp*Math.sin(pa*D2R);
+        const lx2=cx2-sp*Math.cos(pa*D2R),ly2=cy2+sp*Math.sin(pa*D2R);
+        s+=`<circle cx="${lx1.toFixed(1)}" cy="${ly1.toFixed(1)}" r="2.8" fill="${col}" opacity="0.82"/>
+            <circle cx="${lx2.toFixed(1)}" cy="${ly2.toFixed(1)}" r="2.8" fill="${col}" opacity="0.82"/>`;
+      });
+    }
+
+    // ionic lone pairs (always show on anion)
+    if(btypes.some(bt=>bt.t==='ion')&&a.lp&&a.charge&&a.charge<0){
+      a.lp.forEach(ang=>{
+        const dist=r+13;
+        const cx2=a.x+dist*Math.cos(ang*D2R),cy2=a.y-dist*Math.sin(ang*D2R);
+        const pa=ang+90,sp=4.5;
+        const lx1=cx2+sp*Math.cos(pa*D2R),ly1=cy2-sp*Math.sin(pa*D2R);
+        const lx2=cx2-sp*Math.cos(pa*D2R),ly2=cy2+sp*Math.sin(pa*D2R);
+        s+=`<circle cx="${lx1.toFixed(1)}" cy="${ly1.toFixed(1)}" r="2.8" fill="#ff4466" opacity="0.85"/>
+            <circle cx="${lx2.toFixed(1)}" cy="${ly2.toFixed(1)}" r="2.8" fill="#ff4466" opacity="0.85"/>`;
+      });
+    }
+  });
+
+  // Angle arc
+  if(opts.angle&&m.angle){
+    const ang=m.angle;
+    const center=A[ang.c];
+    // find two bond-partner atoms
+    const partners=B.filter(b=>b.a===ang.c||b.b===ang.c).slice(0,2)
+      .map(b=>A[b.a===ang.c?b.b:b.a]);
+    if(partners.length>=2){
+      const a1=Math.atan2(-(partners[0].y-center.y),partners[0].x-center.x)/D2R;
+      const a2=Math.atan2(-(partners[1].y-center.y),partners[1].x-center.x)/D2R;
+      const r2=35;
+      // arc polyline
+      let span=a2-a1;
+      while(span>180)span-=360;
+      while(span<-180)span+=360;
+      const n=16;
+      let pts=[];
+      for(let i=0;i<=n;i++){
+        const aa=(a1+(i/n)*span)*D2R;
+        pts.push(`${(center.x+r2*Math.cos(aa)).toFixed(1)},${(center.y-r2*Math.sin(aa)).toFixed(1)}`);
+      }
+      s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round"/>`;
+      // angle label
+      const midA=(a1+a2/2||a1+span/2)*D2R;
+      const lx=center.x+(r2+18)*Math.cos((a1+span/2)*D2R);
+      const ly=center.y-(r2+18)*Math.sin((a1+span/2)*D2R);
+      s+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" fill="var(--muted)" font-size="12"
+             text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace">${ang.deg}°</text>`;
+    }
+  }
+
+  // Molecule dipole
+  if(opts.dmol&&m.dipole){
+    const [x1,y1,x2,y2]=m.dipole;
+    s+=arrowSVG(x1,y1,x2,y2,20,'var(--acc)');
+    s+=`<text x="${(x1+x2)/2+18}" y="${(y1+y2)/2}" fill="var(--acc)" font-size="13" font-weight="600"
+           text-anchor="start" dominant-baseline="middle" font-family="Sora,sans-serif">μ</text>`;
+  }
+
+  return s;
+}
+
+function updateM(){
+  ST.mol=document.getElementById('molSel').value;
+  renderM();
+}
+
+function renderM(){
+  const mode=ST.mode;
+  const opts=ST.o;
+  const mv=document.getElementById('molView');
+
+  if(mode==='cmp'){
+    mv.innerHTML=`
+      <div class="cmpwrap">
+        <div class="cmppanel">
+          <select class="cmpsel" id="cmpSel1" onchange="renderM()">
+            ${molOptions(ST.mol)}
+          </select>
+          <svg id="svgC1" viewBox="0 0 500 340" style="width:100%;max-width:380px;max-height:300px;overflow:visible"></svg>
+        </div>
+        <div class="cmppanel">
+          <select class="cmpsel" id="cmpSel2" onchange="renderM()">
+            ${molOptions(ST.mol2)}
+          </select>
+          <svg id="svgC2" viewBox="0 0 500 340" style="width:100%;max-width:380px;max-height:300px;overflow:visible"></svg>
+        </div>
+      </div>`;
+    const s1=document.getElementById('cmpSel1').value;
+    const s2=document.getElementById('cmpSel2').value;
+    ST.mol=s1; ST.mol2=s2;
+    document.getElementById('svgC1').innerHTML=molSVG(s1,opts,500,340);
+    document.getElementById('svgC2').innerHTML=molSVG(s2,opts,500,340);
+    updateInfo(s1);
+    return;
+  }
+
+  if(mode==='quiz'){
+    mv.innerHTML=`<svg id="svgM" viewBox="0 0 500 360" style="width:100%;max-width:500px;max-height:360px;overflow:visible"></svg>
+      <div class="quizbox" id="qbox"></div>`;
+    const quizOpts={...opts,en:false,delta:false,dbond:false,dmol:false,den:false};
+    document.getElementById('svgM').innerHTML=molSVG(ST.mol,quizOpts,500,360);
+    buildQuiz();
+    updateInfo(ST.mol);
+    return;
+  }
+
+  // normal
+  mv.innerHTML=`<svg id="svgM" viewBox="0 0 500 360" style="width:100%;max-width:520px;max-height:520px;overflow:visible"></svg>`;
+  document.getElementById('svgM').innerHTML=molSVG(ST.mol,opts,500,360);
+  updateInfo(ST.mol);
+}
+
+function molOptions(selected){
+  return Object.keys(MOLS).map(k=>`<option value="${k}"${k===selected?' selected':''}>${MOLS[k].formula} – ${MOLS[k].name}</option>`).join('');
+}
+
+function updateInfo(key){
+  const m=MOLS[key];
+  if(!m)return;
+  const opts=ST.o;
+  document.getElementById('iName').textContent=m.name+' ('+m.formula+')';
+  document.getElementById('iGeo').textContent=m.geo;
+  // bond types
+  const types=[...new Set(m.bonds.map(b=>{const d=dEN(m.atoms[b.a].s,m.atoms[b.b].s);const t=bType(d,b.over);return bLabel(t)}))];
+  document.getElementById('iBtype').textContent=types.join(', ');
+  const polCol=m.pol==='unpolar'?'var(--grn)':m.pol==='Ionenverbindung'?'var(--red)':'var(--yel)';
+  const polEl=document.getElementById('iPol');
+  polEl.textContent=m.pol; polEl.style.color=polCol;
+  // info strip visibility
+  document.getElementById('infoStrip').style.display=opts.info?'grid':'none';
+}
+
+/* QUIZ */
+const Q_TYPES=['np','pol','ion'];
+const Q_LABELS={'np':'Unpolar kovalent','pol':'Polar kovalent','ion':'Ionenbindung'};
+
+function buildQuiz(){
+  const m=MOLS[ST.mol];
+  const types=[...new Set(m.bonds.map(b=>{const d=dEN(m.atoms[b.a].s,m.atoms[b.b].s);return bType(d,b.over)}))];
+  const correct=types[0];
+  const opts=shuffle([...Q_TYPES]);
+  const qbox=document.getElementById('qbox');
+  qbox.innerHTML=`<div class="quizq">Welchen Bindungstyp hat dieses Molekül?</div>
+    <div class="quizopts">${opts.map(o=>`<button class="qopt" onclick="answerQuiz('${o}','${correct}',this)">${Q_LABELS[o]}</button>`).join('')}</div>
+    <div class="quizres" id="quizres"></div>`;
+}
+
+function answerQuiz(ans,correct,btn){
+  document.querySelectorAll('.qopt').forEach(b=>b.onclick=null);
+  if(ans===correct){
+    btn.classList.add('correct');
+    document.getElementById('quizres').innerHTML=`✓ Richtig! ${MOLS[ST.mol].info}
+      <br><br><button class="qnext" onclick="nextQuiz()">Nächstes Molekül →</button>`;
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.qopt').forEach(b=>{if(b.textContent===Q_LABELS[correct])b.classList.add('correct')});
+    document.getElementById('quizres').innerHTML=`✗ Leider falsch. ${MOLS[ST.mol].info}
+      <br><br><button class="qnext" onclick="nextQuiz()">Nächstes Molekül →</button>`;
+  }
+}
+
+function nextQuiz(){
+  const keys=Object.keys(MOLS);
+  ST.mol=keys[Math.floor(Math.random()*keys.length)];
+  document.getElementById('molSel').value=ST.mol;
+  renderM();
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* ════════ UI ════════ */
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('t'+id).classList.add('on');
+  document.querySelectorAll('.tbtn')[id==='g'?0:1].classList.add('on');
+  if(id==='m') renderM();
+}
+
+function setMode(m){
+  ST.mode=m;
+  ['normal','quiz','cmp'].forEach(x=>{
+    document.getElementById('m'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('on',x===m);
+  });
+  renderM();
+}
+
+function tog(key){
+  ST.o[key]=!ST.o[key];
+  const ids={en:'tEN',delta:'tDelta',lone:'tLone',angle:'tAngle',
+             dbond:'tDbond',dmol:'tDmol',bcol:'tBcol',info:'tInfo',wedge:'tWedge',den:'tDen'};
+  document.getElementById(ids[key]).classList.toggle('on',ST.o[key]);
+  renderM();
+}
+
+/* ════════ INIT ════════ */
+updateG();
+renderM();
+</script>
+</body>
+</html>
