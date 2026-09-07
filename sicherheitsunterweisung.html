@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laborlizenz – Sicherheitsunterweisung Chemie</title>
+<style>
+:root{
+  --bank:#E9EDE8;
+  --bank-tief:#DCE2DA;
+  --tinte:#16241F;
+  --grau:#5C6B64;
+  --verbot:#D42A21;
+  --rettung:#007A4D;
+  --gebot:#005A9C;
+  --warn:#F2B705;
+  --papier:#FFFFFF;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bank); color:var(--tinte);
+  font-family:"Avenir Next","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:17px; line-height:1.55; -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:760px;margin:0 auto;padding:16px 18px 64px}
+
+header.top{position:sticky;top:0;z-index:20;background:var(--bank);
+  border-bottom:2px solid var(--tinte);margin:0 -18px;padding:10px 18px 8px}
+.top-zeile{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.marke{font-size:15px;font-weight:700}
+.marke span{font-weight:400;color:var(--grau)}
+.punkte{font-variant-numeric:tabular-nums;font-weight:700}
+.stempel{display:flex;gap:6px;margin-top:8px}
+.slot{flex:1;height:30px;border:2px solid var(--grau);border-radius:3px;
+  display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--grau);
+  transition:background .25s,color .25s,border-color .25s}
+.slot.aktiv{border-color:var(--tinte);color:var(--tinte);border-width:3px}
+.slot.voll{background:var(--rettung);border-color:var(--rettung);color:#fff;font-weight:700}
+
+section{display:none}
+section.sichtbar{display:block}
+h1{font-size:34px;line-height:1.15;margin:26px 0 10px;font-weight:800;letter-spacing:-.01em}
+h2{font-size:24px;line-height:1.2;margin:22px 0 6px;font-weight:800;letter-spacing:-.01em}
+h3{font-size:18px;margin:20px 0 6px}
+p{margin:8px 0}
+.lead{color:var(--grau);max-width:62ch}
+.frage{font-size:20px;font-weight:700;margin:16px 0 10px}
+
+button{font:inherit;cursor:pointer}
+.knopf{background:var(--tinte);color:var(--bank);border:none;border-radius:4px;
+  padding:13px 22px;font-weight:700;font-size:17px}
+.knopf:disabled{opacity:.35;cursor:default}
+.knopf.hell{background:transparent;color:var(--tinte);border:2px solid var(--tinte)}
+.knopf:focus-visible,.karte:focus-visible,.opt:focus-visible,.pik:focus-visible,.ziel:focus-visible{
+  outline:3px solid var(--gebot);outline-offset:3px}
+.leiste{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;align-items:center}
+
+.karten{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.karte,.opt{background:var(--papier);border:2px solid var(--tinte);border-radius:4px;
+  padding:12px 14px;text-align:left;font-size:16px;line-height:1.35}
+.karte{flex:1 1 100%}
+.opt{display:block;width:100%;margin:8px 0}
+.richtig{border-color:var(--rettung);background:#E6F2EC}
+.falsch{border-color:var(--verbot);background:#FBE9E7}
+
+.wahl{display:flex;gap:8px;margin-top:10px}
+.wahl button{flex:1;border-radius:4px;border:2px solid;padding:12px;font-weight:700;background:var(--papier)}
+.wahl .ja{border-color:var(--rettung);color:var(--rettung)}
+.wahl .nein{border-color:var(--verbot);color:var(--verbot)}
+
+.hinweis{border-left:5px solid var(--warn);background:var(--papier);padding:10px 14px;margin:14px 0;font-size:16px}
+.hinweis.gut{border-left-color:var(--rettung)}
+.hinweis.schlecht{border-left-color:var(--verbot)}
+.zaehler{font-size:15px;color:var(--grau);font-variant-numeric:tabular-nums}
+
+.buehne{background:var(--papier);border:2px solid var(--tinte);border-radius:4px;margin:12px 0;overflow:hidden}
+.buehne svg{display:block;width:100%;height:auto}
+.szenenbild{display:block;width:100%;height:auto}
+.platzhalter{border:3px dashed var(--grau);border-radius:4px;background:var(--papier);
+  padding:28px 18px;text-align:center;color:var(--grau);font-size:15px;margin:12px 0}
+.platzhalter code{font-size:14px;color:var(--tinte)}
+
+.ziel circle.ring{fill:transparent;stroke:transparent}
+.ziel.treffer circle.ring{stroke:var(--rettung);fill:rgba(0,122,77,.16);stroke-width:3}
+
+.pik-gitter{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+@media(min-width:560px){.pik-gitter{grid-template-columns:repeat(5,1fr)}}
+.pik{background:var(--papier);border:3px solid transparent;border-radius:6px;padding:4px}
+.pik img{display:block;width:100%;height:auto}
+.pik.ok{border-color:var(--rettung)}
+.pik.nok{border-color:var(--verbot);opacity:.4}
+
+.schritt{display:flex;align-items:center;gap:10px;width:100%;margin:8px 0;background:var(--papier);
+  border:2px solid var(--tinte);border-radius:4px;padding:12px 14px;text-align:left}
+.nr{min-width:26px;height:26px;border-radius:50%;background:var(--tinte);color:var(--bank);
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex:0 0 auto}
+.schritt.gesetzt{border-color:var(--rettung);background:#E6F2EC}
+.schritt.gesetzt .nr{background:var(--rettung)}
+
+.lizenzfeld{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+input[type=text]{font:inherit;padding:12px;border:2px solid var(--tinte);border-radius:4px;
+  background:var(--papier);color:var(--tinte);flex:1 1 200px;min-width:0}
+#lizenzBild{display:block;width:100%;max-width:640px;border:2px solid var(--tinte);border-radius:4px;margin:14px 0}
+footer.fuss{margin-top:40px;padding-top:14px;border-top:1px solid var(--bank-tief);font-size:14px;color:var(--grau)}
+footer.fuss a{color:var(--gebot)}
+@media print{header.top,.leiste,footer.fuss{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="top-zeile">
+    <div class="marke">Laborlizenz Chemie <span>· Jahrgang 9/10</span></div>
+    <div class="punkte" id="punkteAnzeige">0 P</div>
+  </div>
+  <div class="stempel" id="stempel"></div>
+</header>
+
+<section id="s0" class="sichtbar">
+  <h1>Du willst experimentieren?<br>Dann hol dir die Lizenz.</h1>
+  <p class="lead">Fünf Stationen, ungefähr 20 Minuten. Für jede bestandene Station bekommst du einen Stempel. Mit allen fünf Stempeln und mindestens 80&nbsp;% der Punkte gibt es am Ende deine Laborlizenz als Bild für dein OneNote-Heft.</p>
+  <p class="lead">Fehler kosten Punkte, aber du erfährst sofort, warum etwas falsch war. Genau darum geht es: Im Ernstfall zählt nur, ob du richtig reagierst, ohne lange nachzudenken.</p>
+  <div class="hinweis">Diese Wiederholung ergänzt die mündliche Unterweisung durch deine Lehrkraft. Es gilt immer die Fachraumordnung, die im Chemieraum aushängt.</div>
+  <div class="leiste"><button class="knopf" onclick="zu(1)">Station 1 starten</button></div>
+</section>
+
+<section id="s1">
+  <h2>Station 1 · Verhalten im Chemieraum</h2>
+  <p class="lead">Erlaubt oder verboten? Entscheide dich, dann bekommst du die Begründung.</p>
+  <div class="zaehler" id="z1"></div>
+  <div id="k1"></div>
+  <div id="fb1"></div>
+  <div class="leiste"><button class="knopf" id="w1" onclick="zu(2)" disabled>Weiter zu Station 2</button></div>
+</section>
+
+<section id="s2">
+  <h2>Station 2 · Sicherheit beim Experimentieren</h2>
+  <p class="lead">Auf jedem Bild läuft etwas schief. Was genau ist das Problem?</p>
+  <div class="zaehler" id="z2"></div>
+  <div id="bild2"></div>
+  <div id="k2"></div>
+  <div id="fb2"></div>
+  <div id="brennerBlock" style="display:none">
+    <h3>Gasbrenner richtig anzünden</h3>
+    <p class="lead">Tippe die Schritte in der richtigen Reihenfolge an.</p>
+    <div id="k2b"></div>
+    <div id="fb2b"></div>
+  </div>
+  <div class="leiste"><button class="knopf" id="w2" onclick="zu(3)" disabled>Weiter zu Station 3</button></div>
+</section>
+
+<section id="s3">
+  <h2>Station 3 · Fluchtweg und Notfalleinrichtungen</h2>
+  <p class="lead">Der Grundriss zeigt euren Chemieraum. Finde, wonach gefragt wird.</p>
+  <div class="frage" id="suchfrage"></div>
+  <div class="buehne" id="plan"></div>
+  <div id="fb3"></div>
+  <div id="alarmBlock" style="display:none">
+    <h3>Der Alarm geht los</h3>
+    <p class="lead">Tippe die Schritte in der richtigen Reihenfolge an.</p>
+    <div id="k3b"></div>
+    <div id="fb3b"></div>
+  </div>
+  <div class="leiste"><button class="knopf" id="w3" onclick="zu(4)" disabled>Weiter zu Station 4</button></div>
+</section>
+
+<section id="s4">
+  <h2>Station 4 · Gefahrstoffsymbole</h2>
+  <p class="lead">Neun GHS-Piktogramme. Tippe jeweils das an, das zur Beschreibung passt.</p>
+  <div class="frage" id="ghsFrage"></div>
+  <div class="pik-gitter" id="ghsGitter"></div>
+  <div id="fb4"></div>
+  <div class="leiste"><button class="knopf" id="w4" onclick="zu(5)" disabled>Weiter zu Station 5</button></div>
+</section>
+
+<section id="s5">
+  <h2>Station 5 · Notfall</h2>
+  <p class="lead">Was tust du zuerst? Eine Antwort ist richtig.</p>
+  <div class="zaehler" id="z5"></div>
+  <div class="frage" id="notFrage"></div>
+  <div id="k5"></div>
+  <div id="fb5"></div>
+  <div class="leiste"><button class="knopf" id="w5" onclick="zu(6)" disabled>Zur Abschlussprüfung</button></div>
+</section>
+
+<section id="s6">
+  <h2>Abschlussprüfung</h2>
+  <p class="lead">Acht Fragen quer durch alle Stationen. Ab 80&nbsp;% der Gesamtpunkte bekommst du die Lizenz.</p>
+  <div class="zaehler" id="z6"></div>
+  <div class="frage" id="pFrage"></div>
+  <div id="k6"></div>
+  <div id="fb6"></div>
+  <div class="leiste"><button class="knopf" id="w6" onclick="auswerten()" disabled>Auswertung</button></div>
+</section>
+
+<section id="s7">
+  <h2 id="ergebnisTitel"></h2>
+  <p class="lead" id="ergebnisText"></p>
+  <div id="lizenzBereich" style="display:none">
+    <div class="lizenzfeld">
+      <input type="text" id="feldName" placeholder="Vorname Nachname" autocomplete="off">
+      <input type="text" id="feldKlasse" placeholder="Klasse" autocomplete="off" style="flex:0 1 120px">
+    </div>
+    <div class="leiste"><button class="knopf" onclick="karteBauen()">Lizenzkarte erzeugen</button></div>
+    <img id="lizenzBild" alt="Deine Laborlizenz" style="display:none">
+    <div class="leiste" id="exportLeiste" style="display:none">
+      <a class="knopf" id="ladeLink" download="Laborlizenz.png" style="text-decoration:none">Bild speichern</a>
+      <button class="knopf hell" onclick="window.print()">Drucken</button>
+    </div>
+    <div class="hinweis">Fürs OneNote-Heft: Tippe lange auf das Bild und wähle „Bild sichern“ oder „Kopieren“, dann in OneNote einfügen. Alternativ über „Bild speichern“ in die Dateien-App legen.</div>
+  </div>
+  <div class="leiste"><button class="knopf hell" onclick="location.reload()">Neu starten</button></div>
+</section>
+
+<footer class="fuss">
+  Grundlage: RISU-NRW 2024 (BASS 18-29 Nr. 5, Runderlass vom 02.06.2024) sowie die Fachraumordnung der Schule.
+  Halbjährliche Unterweisung nach RISU; die Durchführung ist von der Lehrkraft im Klassenbuch zu dokumentieren.
+  GHS-Piktogramme: UNECE. Weitere Informationen:
+  <a href="https://www.sichere-schule.de" target="_blank" rel="noopener">sichere-schule.de</a> (Unfallkasse NRW / DGUV).
+</footer>
+</div>
+
+<script>
+/* ================= Zustand ================= */
+var P = {punkte:0, max:0, stempel:[false,false,false,false,false], station:0};
+var STATIONEN = ["Raum","Versuch","Flucht","GHS","Notfall"];
+
+function stempelZeichnen(){
+  var h="";
+  for(var i=0;i<5;i++){
+    var k="slot"+(P.stempel[i]?" voll":(P.station===i+1?" aktiv":""));
+    h+='<div class="'+k+'">'+(P.stempel[i]?"&#10003; ":"")+STATIONEN[i]+'</div>';
+  }
+  document.getElementById("stempel").innerHTML=h;
+  document.getElementById("punkteAnzeige").textContent=P.punkte+" P";
+}
+function gut(n){P.punkte+=n;P.max+=n;stempelZeichnen();}
+function schlecht(n){P.max+=n;stempelZeichnen();}
+function zu(n){
+  P.station=n;
+  var alle=document.querySelectorAll("section");
+  for(var i=0;i<alle.length;i++) alle[i].className="";
+  document.getElementById("s"+n).className="sichtbar";
+  window.scrollTo(0,0); stempelZeichnen();
+  if(n===1) baueS1(); if(n===2) baueS2(); if(n===3) baueS3();
+  if(n===4) baueS4(); if(n===5) baueS5(); if(n===6) baueS6();
+}
+function meldung(id, ok, text){
+  document.getElementById(id).innerHTML='<div class="hinweis '+(ok?"gut":"schlecht")+'">'+text+'</div>';
+}
+function mische(a){
+  var b=a.slice();
+  for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=b[i];b[i]=b[j];b[j]=t;}
+  return b;
+}
+
+/* ================= Station 1 ================= */
+var D1=[
+ {t:"Deine Trinkflasche steht neben dem Versuchsaufbau.",ok:false,b:"Essen und Trinken sind im Chemieraum verboten. Aus einer Flasche neben offenen Chemikalien wird schnell eine Vergiftung."},
+ {t:"Du bindest deine langen Haare zusammen, bevor der Brenner an ist.",ok:true,b:"Richtig. Offene lange Haare fangen über einer Brennerflamme sofort Feuer."},
+ {t:"Der Versuch ist langweilig, du gibst noch etwas mehr Säure dazu.",ok:false,b:"Es wird ausschließlich das durchgeführt, was die Lehrkraft angeordnet hat. Eigene Zugaben verändern die Reaktion unkalkulierbar."},
+ {t:"Deine Jacke und der Rucksack liegen auf dem Arbeitstisch.",ok:false,b:"Der Arbeitsplatz bleibt frei: nur Heft, Stift und Versuchsmaterial. Taschen gehören an den zugewiesenen Platz, damit sie im Fluchtweg nicht im Weg liegen."},
+ {t:"Du fächelst dir den Geruch mit der Hand zur Nase.",ok:true,b:"Richtig. Nur die Wedelprobe ist erlaubt, niemals direkt über dem Gefäß schnuppern."},
+ {t:"Du bist unsicher, wie es weitergeht, und fragst die Lehrkraft.",ok:true,b:"Richtig. Nachfragen ist nie peinlich, Raten ist gefährlich."},
+ {t:"Nach dem Versuch nimmst du einen Rest Kupfersulfat mit nach Hause.",ok:false,b:"Chemikalien verlassen den Fachraum nicht. Das ist unzulässig und gesundheitsgefährdend."},
+ {t:"Am Ende der Stunde wäschst du dir die Hände.",ok:true,b:"Richtig. Auch ohne sichtbare Verschmutzung gehört Händewaschen zum Aufräumen dazu."}
+];
+var i1=0,r1=0,L1;
+function baueS1(){ if(L1) return; L1=mische(D1); zeigeK1(); }
+function zeigeK1(){
+  if(i1>=L1.length){
+    document.getElementById("k1").innerHTML="";
+    document.getElementById("z1").textContent="Station 1 abgeschlossen: "+r1+" von "+L1.length+" richtig.";
+    P.stempel[0]=true; document.getElementById("w1").disabled=false; stempelZeichnen(); return;
+  }
+  document.getElementById("z1").textContent="Karte "+(i1+1)+" von "+L1.length;
+  document.getElementById("k1").innerHTML=
+    '<div class="karten"><div class="karte">'+L1[i1].t+'</div></div>'+
+    '<div class="wahl"><button class="ja" onclick="pruefe1(true)">Erlaubt</button>'+
+    '<button class="nein" onclick="pruefe1(false)">Verboten</button></div>';
+}
+function pruefe1(wahl){
+  var f=L1[i1],ok=(wahl===f.ok);
+  if(ok){gut(2);r1++;}else{schlecht(2);}
+  meldung("fb1",ok,(ok?"":"<strong>Nicht ganz. </strong>")+f.b+
+    ' <button class="knopf" style="margin-top:10px;display:block" onclick="weiter1()">Weiter</button>');
+  document.getElementById("k1").innerHTML="";
+}
+function weiter1(){i1++;document.getElementById("fb1").innerHTML="";zeigeK1();}
+
+/* ================= Station 2 ================= */
+/* Bilder erwartet unter bilder/versuch/fehler_1.jpg ... fehler_6.jpg */
+var F2=[
+ {bild:"fehler_1.jpg", alt:"Schutzbrille auf der Stirn",
+  o:["Die Schutzbrille sitzt auf der Stirn statt auf den Augen.",
+     "Der Arbeitsplatz ist nicht aufgeräumt.",
+     "Es fehlen Handschuhe."], r:0,
+  b:"Auf der Stirn schützt sie gar nichts. Die Brille wird getragen, solange im Raum experimentiert wird, auch wenn nur der Nachbartisch arbeitet.",
+  ph:"Nahaufnahme: Schutzbrille auf die Stirn hochgeschoben"},
+ {bild:"fehler_2.jpg", alt:"Offene lange Haare über der Flamme",
+  o:["Die Flamme ist zu groß eingestellt.",
+     "Lange offene Haare hängen über die Brennerflamme.",
+     "Der Brenner steht zu nah am Tischrand."], r:1,
+  b:"Haare fangen sofort Feuer und brennen extrem schnell. Zusammenbinden, bevor die Flamme brennt.",
+  ph:"Schüler mit offenen langen Haaren über brennendem Gasbrenner"},
+ {bild:"fehler_3.jpg", alt:"Reagenzglas auf eine Person gerichtet",
+  o:["Das Reagenzglas ist zu voll gefüllt.",
+     "Es wird ohne Reagenzglashalter gearbeitet.",
+     "Die Öffnung des Reagenzglases zeigt auf eine Person."], r:2,
+  b:"Bei Siedeverzug wird der Inhalt herausgeschleudert. Die Öffnung zeigt immer von allen Personen weg.",
+  ph:"Erhitztes Reagenzglas, Öffnung zeigt auf die zweite Person"},
+ {bild:"fehler_4.jpg", alt:"Getränkeflasche auf dem Arbeitstisch",
+  o:["Eine Getränkeflasche steht zwischen den Chemikalien.",
+     "Die Gläser stehen zu dicht beieinander.",
+     "Die Spritzflasche ist offen."], r:0,
+  b:"Essen und Trinken sind im Chemieraum verboten. Verwechslungen mit Chemikalienflaschen sind eine reale Unfallursache.",
+  ph:"Trinkflasche direkt neben Bechergläsern auf der Laborbank"},
+ {bild:"fehler_5.jpg", alt:"Rucksack im Gang",
+  o:["Der Gang zwischen den Tischen ist zu schmal.",
+     "Ein Rucksack liegt im Gang und versperrt den Weg.",
+     "Der Boden ist nass."], r:1,
+  b:"Im Ernstfall stolpert hier jemand auf dem Fluchtweg. Taschen gehören an den dafür vorgesehenen Platz.",
+  ph:"Rucksack liegt im Gang zwischen zwei Laborbänken"},
+ {bild:"fehler_6.jpg", alt:"Unbeaufsichtigter Brenner",
+  o:["Der Brenner steht falsch herum.",
+     "Der Arbeitsplatz ist zu leer.",
+     "Der Brenner brennt, aber niemand ist am Platz."], r:2,
+  b:"Unbeaufsichtigte Flammen sind die häufigste Brandursache im Schullabor. Wer den Platz verlässt, dreht das Gas ab.",
+  ph:"Brennender Gasbrenner an leerer Laborbank, niemand in der Nähe"}
+];
+var L2,i2=0;
+function baueS2(){ if(!L2){L2=mische(F2);} frage2(); }
+function frage2(){
+  if(i2>=L2.length){
+    document.getElementById("bild2").innerHTML="";
+    document.getElementById("k2").innerHTML="";
+    document.getElementById("z2").textContent="Alle Bilder bearbeitet.";
+    document.getElementById("brennerBlock").style.display="block";
+    baueReihe("k2b","fb2b",BRENNER,2,function(){
+      P.stempel[1]=true; document.getElementById("w2").disabled=false; stempelZeichnen();
+    });
+    return;
+  }
+  var f=L2[i2];
+  document.getElementById("z2").textContent="Bild "+(i2+1)+" von "+L2.length;
+  document.getElementById("bild2").innerHTML=
+    '<div class="buehne"><img class="szenenbild" src="bilder/versuch/'+f.bild+'" alt="'+f.alt+
+    '" onerror="fehlbild(this,\''+f.bild+'\',\''+f.ph+'\')"></div>';
+  var h='<div class="frage">Was ist hier das Problem?</div>';
+  for(var k=0;k<f.o.length;k++) h+='<button class="opt" onclick="klick2('+k+',this)">'+f.o[k]+'</button>';
+  document.getElementById("k2").innerHTML=h;
+}
+function fehlbild(img,name,text){
+  img.parentNode.outerHTML='<div class="platzhalter">Bild fehlt: <code>bilder/versuch/'+name+'</code><br>'+text+'</div>';
+}
+function klick2(k,el){
+  var f=L2[i2];
+  if(k===f.r){
+    el.className="opt richtig"; gut(4);
+    var os=document.querySelectorAll("#k2 .opt");
+    for(var i=0;i<os.length;i++) os[i].disabled=true;
+    meldung("fb2",true,"<strong>Richtig. </strong>"+f.b+
+      ' <button class="knopf" style="margin-top:10px;display:block" onclick="weiter2()">Weiter</button>');
+  } else {
+    el.className="opt falsch"; el.disabled=true; schlecht(4);
+    meldung("fb2",false,"Das ist hier nicht das eigentliche Problem. Schau genauer hin.");
+  }
+}
+function weiter2(){i2++;document.getElementById("fb2").innerHTML="";frage2();}
+
+var BRENNER=[
+ "Schutzbrille aufsetzen, lange Haare zusammenbinden",
+ "Luftzufuhr am Brenner schließen",
+ "Zündquelle entzünden und über das Brennerrohr halten",
+ "Gaszufuhr öffnen, die gelbe Leuchtflamme brennt",
+ "Luftzufuhr öffnen, bis die rauschende Flamme brennt"
+];
+
+/* Wiederverwendbare Reihenfolge-Aufgabe */
+function baueReihe(zielId,fbId,liste,pkt,fertig){
+  var reihe=mische(liste.map(function(t,i){return {t:t,i:i};}));
+  var pos=0, el=document.getElementById(zielId);
+  function zeichnen(){
+    var h="";
+    for(var k=0;k<reihe.length;k++){
+      h+='<button class="schritt" data-k="'+k+'"><span class="nr">'+
+         (reihe[k].nr?reihe[k].nr:"&nbsp;")+'</span><span>'+reihe[k].t+'</span></button>';
+    }
+    el.innerHTML=h;
+    var bs=el.querySelectorAll(".schritt");
+    for(var j=0;j<bs.length;j++){
+      if(reihe[j].nr) bs[j].className="schritt gesetzt";
+      bs[j].onclick=function(){tipp(parseInt(this.getAttribute("data-k"),10));};
+    }
+  }
+  function tipp(k){
+    if(reihe[k].nr) return;
+    if(reihe[k].i===pos){
+      pos++; reihe[k].nr=pos; gut(pkt);
+      document.getElementById(fbId).innerHTML=""; zeichnen();
+      if(pos===liste.length){
+        document.getElementById(fbId).innerHTML='<div class="hinweis gut">Reihenfolge vollständig richtig.</div>';
+        fertig();
+      }
+    } else {
+      schlecht(pkt);
+      document.getElementById(fbId).innerHTML=
+        '<div class="hinweis schlecht">Noch nicht dran. Überlege, was passieren würde, wenn du diesen Schritt jetzt ausführst.</div>';
+    }
+  }
+  zeichnen();
+}
+
+/* ================= Station 3 ================= */
+var Z3=[
+ {id:"tuer1",f:"Wo ist der Hauptausgang zum Flur?",b:"Fluchtwege werden nie durch Taschen oder Stühle zugestellt."},
+ {id:"tuer2",f:"Wo ist der zweite Ausgang?",b:"Naturwissenschaftliche Räume haben zwei Ausgänge. Ist einer versperrt, nimmst du den anderen."},
+ {id:"notaus",f:"Wo ist der Not-Aus-Schalter für Gas und Strom?",b:"Ein Druck trennt Gas und Strom im ganzen Raum. Bei jedem Zwischenfall betätigen, wenn er erreichbar ist."},
+ {id:"dusche",f:"Wo ist die Augendusche?",b:"Mindestens zehn Minuten spülen, Lid offen halten, danach immer zum Arzt."},
+ {id:"loescher",f:"Wo hängen Feuerlöscher und Löschdecke?",b:"Die Löschdecke ist für brennende Kleidung, der Löscher für den Raum. Beides nur nach Anweisung benutzen."},
+ {id:"verband",f:"Wo ist der Verbandkasten?",b:"Jede Verletzung, auch eine kleine, wird gemeldet und dokumentiert."}
+];
+var i3=0;
+function baueS3(){
+  if(!document.getElementById("plan").innerHTML){
+    document.getElementById("plan").innerHTML=planSVG();
+    var zs=document.querySelectorAll("#plan .ziel");
+    for(var i=0;i<zs.length;i++) zs[i].addEventListener("click",klick3);
+  }
+  frage3();
+}
+function frage3(){
+  if(i3>=Z3.length){
+    document.getElementById("suchfrage").textContent="Alle Einrichtungen gefunden.";
+    document.getElementById("fb3").innerHTML=
+      '<div class="hinweis"><strong>Unser Fluchtweg:</strong> aus dem Raum, durch das Lehrertreppenhaus '+
+      'nach unten, über den Schulhof auf den Sportplatz. Der Sportplatz ist unser Sammelplatz. '+
+      'Dort bleibst du bei deiner Klasse, bis die Vollzähligkeit gemeldet wurde.</div>';
+    document.getElementById("alarmBlock").style.display="block";
+    baueReihe("k3b","fb3b",ALARM,2,function(){
+      P.stempel[2]=true; document.getElementById("w3").disabled=false; stempelZeichnen();
+    });
+    return;
+  }
+  document.getElementById("suchfrage").textContent=Z3[i3].f;
+}
+function klick3(e){
+  if(i3>=Z3.length) return;
+  var id=e.currentTarget.getAttribute("data-id");
+  if(id===Z3[i3].id){
+    e.currentTarget.classList.add("treffer"); gut(3);
+    meldung("fb3",true,"<strong>Richtig. </strong>"+Z3[i3].b);
+    i3++; frage3();
+  } else {
+    schlecht(3);
+    meldung("fb3",false,"Das ist etwas anderes. Schau dir die Beschriftungen im Plan genau an.");
+  }
+}
+/* PLATZHALTER-GRUNDRISS – wird durch den echten Raumplan ersetzt */
+function planSVG(){
+  function ziel(id,x,y,w,h,label,farbe){
+    return '<g class="ziel" data-id="'+id+'" tabindex="0" role="button" aria-label="'+label+'">'+
+      '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+farbe+'"/>'+
+      '<circle class="ring" cx="'+(x+w/2)+'" cy="'+(y+h/2)+'" r="'+(Math.max(w,h)/2+10)+'"/>'+
+      '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="transparent"/></g>';
+  }
+  return '<svg viewBox="0 0 480 330" role="img" aria-label="Grundriss des Chemieraums">'+
+  '<rect width="480" height="330" fill="#ffffff"/>'+
+  '<rect x="24" y="24" width="432" height="282" fill="none" stroke="#16241F" stroke-width="5"/>'+
+  '<rect x="90" y="110" width="120" height="34" fill="#DCE2DA" stroke="#16241F" stroke-width="2"/>'+
+  '<rect x="270" y="110" width="120" height="34" fill="#DCE2DA" stroke="#16241F" stroke-width="2"/>'+
+  '<rect x="90" y="188" width="120" height="34" fill="#DCE2DA" stroke="#16241F" stroke-width="2"/>'+
+  '<rect x="270" y="188" width="120" height="34" fill="#DCE2DA" stroke="#16241F" stroke-width="2"/>'+
+  '<rect x="150" y="46" width="180" height="30" fill="#DCE2DA" stroke="#16241F" stroke-width="2"/>'+
+  '<text x="240" y="66" text-anchor="middle" font-size="13" fill="#5C6B64" font-family="sans-serif">Lehrertisch</text>'+
+  ziel("tuer1",24,236,12,56,"Hauptausgang","#007A4D")+
+  '<text x="46" y="270" font-size="12" fill="#007A4D" font-family="sans-serif">Ausgang Flur</text>'+
+  ziel("tuer2",444,60,12,56,"Zweiter Ausgang","#007A4D")+
+  '<text x="436" y="132" text-anchor="end" font-size="12" fill="#007A4D" font-family="sans-serif">2. Ausgang</text>'+
+  ziel("notaus",210,286,34,20,"Not-Aus","#D42A21")+
+  '<text x="227" y="282" text-anchor="middle" font-size="12" fill="#D42A21" font-family="sans-serif">Not-Aus</text>'+
+  ziel("dusche",60,34,26,22,"Augendusche","#005A9C")+
+  '<text x="92" y="50" font-size="12" fill="#005A9C" font-family="sans-serif">Augendusche</text>'+
+  ziel("loescher",396,262,26,30,"Feuerloescher","#D42A21")+
+  '<text x="388" y="284" text-anchor="end" font-size="12" fill="#D42A21" font-family="sans-serif">Löscher/Decke</text>'+
+  ziel("verband",396,34,30,22,"Verbandkasten","#007A4D")+
+  '<text x="388" y="50" text-anchor="end" font-size="12" fill="#007A4D" font-family="sans-serif">Verbandkasten</text>'+
+  '</svg>';
+}
+var ALARM=[
+ "Versuch abbrechen, Gasbrenner löschen",
+ "Not-Aus betätigen, wenn er in Reichweite ist",
+ "Taschen und Jacken liegen lassen",
+ "Den Raum verlassen und durch das Lehrertreppenhaus nach unten gehen",
+ "Über den Schulhof zum Sportplatz gehen",
+ "Am Sportplatz bei der Klasse bleiben, bis die Vollzähligkeit gemeldet ist"
+];
+
+/* ================= Station 4 ================= */
+var GHS=[
+ {d:"bilder/ghs/ghs_01_explos.png", n:"Explosiv", f:"Kann durch Schlag, Reibung oder Hitze explodieren. Im Schulunterricht praktisch nicht zugelassen."},
+ {d:"bilder/ghs/ghs_02_flamme.png", n:"Entzündbar", f:"Brennt leicht. Ethanol trägt dieses Zeichen: kein offenes Feuer in der Nähe, auch nicht am Nachbartisch."},
+ {d:"bilder/ghs/ghs_03_rondflam.png", n:"Brandfördernd", f:"Der Stoff brennt nicht selbst, macht aber jeden Brand heftiger. Nicht neben Brennbarem lagern."},
+ {d:"bilder/ghs/ghs_04_bottle.png", n:"Gase unter Druck", f:"Gasflaschen können bei Erwärmung bersten. Niemals in die Nähe von Wärmequellen bringen."},
+ {d:"bilder/ghs/ghs_05_aetzwirkung_acid_red.png", n:"Ätzend", f:"Zerstört Haut und Augen und greift Metalle an. Schutzbrille ist hier Pflicht."},
+ {d:"bilder/ghs/ghs_06_skull.png", n:"Akut giftig", f:"Schon kleine Mengen können lebensgefährlich sein. Solche Stoffe bleiben in der Hand der Lehrkraft."},
+ {d:"bilder/ghs/ghs_07_exclam.png", n:"Reizend oder gesundheitsschädlich", f:"Reizt Haut, Augen oder Atemwege. Das häufigste Zeichen im Schullabor, aber kein Grund zur Sorglosigkeit."},
+ {d:"bilder/ghs/ghs_08_silhouete.png", n:"Ernste Gesundheitsgefahr", f:"Langfristige Schäden möglich, zum Beispiel krebserzeugend oder erbgutverändernd."},
+ {d:"bilder/ghs/ghs_09_Aquatic-pollut-red.png", n:"Umweltgefährlich", f:"Gewässergefährdend. Reste gehören nie in den Ausguss, sondern in den Sammelbehälter."}
+];
+var L4,i4=0;
+function baueS4(){
+  if(!L4){ L4=mische(GHS).slice(0,5); document.getElementById("ghsGitter").innerHTML=gitter(); }
+  frage4();
+}
+function gitter(){
+  var s="";
+  for(var i=0;i<GHS.length;i++){
+    s+='<button class="pik" data-n="'+GHS[i].n+'" aria-label="'+GHS[i].n+'" onclick="klick4(this)">'+
+       '<img src="'+GHS[i].d+'" alt="'+GHS[i].n+'"></button>';
+  }
+  return s;
+}
+function frage4(){
+  if(i4>=L4.length){
+    document.getElementById("ghsFrage").textContent="Station 4 abgeschlossen.";
+    P.stempel[3]=true; document.getElementById("w4").disabled=false; stempelZeichnen(); return;
+  }
+  document.getElementById("ghsFrage").textContent="Welches Piktogramm bedeutet: "+L4[i4].n+"?";
+  var ps=document.querySelectorAll(".pik");
+  for(var i=0;i<ps.length;i++) ps[i].className="pik";
+}
+function klick4(el){
+  if(i4>=L4.length) return;
+  var n=el.getAttribute("data-n");
+  if(n===L4[i4].n){
+    el.className="pik ok"; gut(4);
+    meldung("fb4",true,"<strong>"+L4[i4].n+". </strong>"+L4[i4].f);
+    i4++; setTimeout(frage4,900);
+  } else {
+    el.className="pik nok"; schlecht(4);
+    meldung("fb4",false,"Das ist das Zeichen für „"+n+"“. Versuch es noch einmal.");
+  }
+}
+
+/* ================= Station 5 ================= */
+var N5=[
+ {f:"Beim Umfüllen läuft dir verdünnte Salzsäure über den Handrücken.",
+  o:["Mit dem Papiertuch abwischen und weitermachen.",
+     "Sofort mit viel fließendem Wasser spülen und die Lehrkraft informieren.",
+     "Warten, ob es anfängt zu brennen."],r:1,
+  b:"Verdünnen und wegspülen ist das Einzige, was hilft. Abwischen verteilt die Säure nur. Danach immer melden, damit der Unfall dokumentiert wird."},
+ {f:"Ein Spritzer landet im Auge.",
+  o:["Augendusche benutzen, mindestens zehn Minuten spülen, Lehrkraft rufen.",
+     "Das Auge kräftig reiben.",
+     "Kurz mit dem Ärmel abtupfen."],r:0,
+  b:"Lange spülen bei geöffnetem Lid, dann zum Arzt. Reiben arbeitet den Stoff in die Hornhaut ein."},
+ {f:"Auf dem Tisch brennt verschütteter Brennspiritus.",
+  o:["Mit Wasser aus der Spritzflasche löschen.",
+     "Mit dem Heft ausschlagen.",
+     "Lehrkraft rufen, Flamme mit der Löschdecke ersticken."],r:2,
+  b:"Wasser verteilt die brennende Flüssigkeit über den ganzen Tisch, statt sie zu löschen. Brennende Flüssigkeiten werden erstickt."},
+ {f:"Der Ärmel deines Nachbarn fängt an der Brennerflamme Feuer.",
+  o:["Er soll schnell auf den Flur laufen.",
+     "Löschdecke oder Notdusche benutzen und sofort laut die Lehrkraft rufen.",
+     "Mit den Händen ausklopfen."],r:1,
+  b:"Laufen facht das Feuer an. Löschdecke oder Notdusche ersticken die Flammen, danach sofort Erste Hilfe."},
+ {f:"Ein Reagenzglas zerbricht auf dem Tisch.",
+  o:["Scherben mit den Händen einsammeln.",
+     "Nichts anfassen, Lehrkraft informieren und den Bereich sichern.",
+     "Die Scherben in den Papierkorb wischen."],r:1,
+  b:"Glasbruch ist mit Chemikalien behaftet. Aufgeräumt wird nur mit geeignetem Werkzeug und in den Scherbenbehälter."},
+ {f:"Dir wird beim Versuch plötzlich schwindelig und übel.",
+  o:["Sitzen bleiben und abwarten, es geht sicher vorbei.",
+     "Sofort der Lehrkraft Bescheid sagen.",
+     "Erst den Versuch zu Ende bringen."],r:1,
+  b:"Symptome können auf eingeatmete Dämpfe hindeuten. Frühzeitig melden, nie allein den Raum verlassen."}
+];
+var i5=0,L5;
+function baueS5(){ if(!L5){L5=mische(N5).slice(0,5);} frage5(); }
+function frage5(){
+  if(i5>=L5.length){
+    document.getElementById("notFrage").textContent="Station 5 abgeschlossen.";
+    document.getElementById("k5").innerHTML="";
+    document.getElementById("z5").textContent="";
+    P.stempel[4]=true; document.getElementById("w5").disabled=false; stempelZeichnen(); return;
+  }
+  document.getElementById("z5").textContent="Szenario "+(i5+1)+" von "+L5.length;
+  document.getElementById("notFrage").textContent=L5[i5].f;
+  var h="";
+  for(var k=0;k<L5[i5].o.length;k++) h+='<button class="opt" onclick="klick5('+k+',this)">'+L5[i5].o[k]+'</button>';
+  document.getElementById("k5").innerHTML=h;
+}
+function klick5(k,el){
+  var f=L5[i5];
+  if(k===f.r){
+    el.className="opt richtig"; gut(4);
+    var os=document.querySelectorAll("#k5 .opt");
+    for(var i=0;i<os.length;i++) os[i].disabled=true;
+    meldung("fb5",true,"<strong>Richtig. </strong>"+f.b+
+      ' <button class="knopf" style="margin-top:10px;display:block" onclick="weiter5()">Weiter</button>');
+  } else {
+    el.className="opt falsch"; el.disabled=true; schlecht(4);
+    meldung("fb5",false,"Das würde die Lage verschlimmern. Denk noch einmal nach.");
+  }
+}
+function weiter5(){i5++;document.getElementById("fb5").innerHTML="";frage5();}
+
+/* ================= Abschlussprüfung ================= */
+var POOL=[
+ {f:"Ab wann trägst du im Chemieraum die Schutzbrille?",o:["Erst wenn es qualmt.","Sobald im Raum experimentiert wird, auch von anderen.","Nur wenn du selbst am Brenner stehst."],r:1,b:"Ein Spritzer vom Nachbartisch trifft dich genauso."},
+ {f:"Wie prüfst du den Geruch einer Substanz?",o:["Mit der Hand zufächeln.","Direkt über dem Gefäß einatmen.","Gar nicht, Geruchsproben sind nie erlaubt."],r:0,b:"Die Wedelprobe ist die einzige zulässige Methode, und nur nach Anweisung."},
+ {f:"Warum erhitzt du ein Reagenzglas schräg und bewegst es dabei ständig?",o:["Damit die Flüssigkeit schneller heiß wird.","Damit sich die Wärme gleichmäßig verteilt und kein Siedeverzug entsteht.","Damit das Glas nicht springt."],r:1,b:"Wird nur eine Stelle erhitzt, überhitzt die Flüssigkeit dort und verdampft schlagartig. Der Inhalt schießt heraus."},
+ {f:"Wohin zeigt die Öffnung eines Reagenzglases beim Erhitzen?",o:["Zu dir, damit du gut siehst.","Zum Nachbarn.","Von allen Personen weg."],r:2,b:"Genau wegen des Siedeverzugs."},
+ {f:"Auf dem Tisch brennt Ethanol. Warum löschst du nicht mit Wasser?",o:["Weil Wasser die brennende Flüssigkeit über den Tisch verteilt.","Weil Wasser mit Ethanol explodiert.","Weil Wasser die Flamme heißer macht."],r:0,b:"Brennende Flüssigkeiten werden erstickt, zum Beispiel mit der Löschdecke, nicht mit Wasser gelöscht."},
+ {f:"Warum haben Chemieräume zwei Ausgänge?",o:["Wegen der Lautstärke.","Damit ein Fluchtweg frei bleibt, wenn der andere versperrt ist.","Aus Gewohnheit."],r:1,b:"Deshalb dürfen beide Wege nie zugestellt werden."},
+ {f:"Was tust du als Erstes, wenn Alarm ausgelöst wird?",o:["Tasche packen.","Versuch abbrechen und Brenner löschen.","Auf dem Handy nachsehen, was los ist."],r:1,b:"Ein unbeaufsichtigter Brenner in einem leeren Raum ist der eigentliche Brandherd."},
+ {f:"Was bedeutet das Piktogramm mit der Flamme über einem Kreis?",o:["Entzündbar.","Brandfördernd.","Explosiv."],r:1,b:"Der Stoff brennt nicht selbst, verstärkt aber Brände."},
+ {f:"Wo entsorgst du umweltgefährliche Reste?",o:["Im Ausguss mit viel Wasser.","Im Restmüll.","Im dafür vorgesehenen Sammelbehälter."],r:2,b:"Alles andere belastet Gewässer und ist unzulässig."},
+ {f:"Du hast eine Chemikalie an der Haut. Was hilft?",o:["Lange mit Wasser spülen.","Mit Seife einreiben.","Mit einem Tuch abreiben."],r:0,b:"Verdünnen und abspülen, danach der Lehrkraft melden."},
+ {f:"Wie lange spülst du ein betroffenes Auge mindestens?",o:["Zehn Sekunden.","Eine Minute.","Zehn Minuten."],r:2,b:"Und anschließend immer zum Arzt, auch wenn es besser wirkt."},
+ {f:"Was gehört auf den Arbeitstisch?",o:["Nur Versuchsmaterial, Heft und Stift.","Jacke und Rucksack.","Trinkflasche und Snack."],r:0,b:"Alles andere behindert im Ernstfall die Flucht oder wird kontaminiert."},
+ {f:"Du bist unsicher, ob du einen Schritt richtig verstanden hast.",o:["Ausprobieren und schauen, was passiert.","Den Nachbarn fragen und weitermachen.","Die Lehrkraft fragen, bevor du weiterarbeitest."],r:2,b:"Im Zweifel immer die Lehrkraft. Das ist keine Schwäche, sondern Vorschrift."},
+ {f:"Was bedeutet das Ausrufezeichen im roten Rahmen?",o:["Reizend oder gesundheitsschädlich.","Akut giftig.","Ätzend."],r:0,b:"Akut giftig ist der Totenkopf, ätzend zeigt die zerstörte Hand."},
+ {f:"Der Brenner brennt, du musst kurz zum Waschbecken.",o:["Brenner brennen lassen, es dauert ja nur kurz.","Gaszufuhr schließen.","Den Nachbarn bitten, kurz hinzusehen."],r:1,b:"Unbeaufsichtigte Flammen sind die häufigste Brandursache im Schullabor."},
+ {f:"Wo ist unser Sammelplatz und wie kommst du dorthin?",o:["Auf dem Schulhof, direkt vor dem Haupteingang.","Auf dem Sportplatz, über das Lehrertreppenhaus und den Schulhof.","Vor der Turnhalle, über das Schülertreppenhaus."],r:1,b:"Der Sportplatz ist der Sammelplatz. Dort bleibst du bei deiner Klasse, bis die Vollzähligkeit gemeldet ist."},
+ {f:"Wozu dient der Not-Aus-Schalter?",o:["Er schaltet das Licht aus.","Er trennt Gas und Strom im Raum.","Er löst den Feueralarm aus."],r:1,b:"Bei jedem ernsten Zwischenfall betätigen, wenn er erreichbar ist."}
+];
+var L6,i6=0,r6=0;
+function baueS6(){ if(!L6){L6=mische(POOL).slice(0,8);} frage6(); }
+function frage6(){
+  if(i6>=L6.length){
+    document.getElementById("pFrage").textContent="Prüfung beendet: "+r6+" von "+L6.length+" richtig.";
+    document.getElementById("k6").innerHTML="";
+    document.getElementById("z6").textContent="";
+    document.getElementById("w6").disabled=false; return;
+  }
+  document.getElementById("z6").textContent="Frage "+(i6+1)+" von "+L6.length;
+  document.getElementById("pFrage").textContent=L6[i6].f;
+  var h="";
+  for(var k=0;k<L6[i6].o.length;k++) h+='<button class="opt" onclick="klick6('+k+',this)">'+L6[i6].o[k]+'</button>';
+  document.getElementById("k6").innerHTML=h;
+}
+function klick6(k,el){
+  var f=L6[i6],ok=(k===f.r);
+  var os=document.querySelectorAll("#k6 .opt");
+  for(var i=0;i<os.length;i++) os[i].disabled=true;
+  if(ok){el.className="opt richtig";gut(5);r6++;}
+  else{el.className="opt falsch";schlecht(5);os[f.r].className="opt richtig";}
+  meldung("fb6",ok,(ok?"<strong>Richtig. </strong>":"<strong>Falsch. </strong>")+f.b+
+    ' <button class="knopf" style="margin-top:10px;display:block" onclick="weiter6()">Weiter</button>');
+}
+function weiter6(){i6++;document.getElementById("fb6").innerHTML="";frage6();}
+
+/* ================= Auswertung ================= */
+var PROZENT=0;
+function auswerten(){
+  zu(7);
+  PROZENT=Math.round(P.punkte/Math.max(P.max,1)*100);
+  var alle=P.stempel.every(function(x){return x;});
+  var bestanden=alle && PROZENT>=80;
+  document.getElementById("ergebnisTitel").textContent=
+    bestanden?"Bestanden: "+PROZENT+" Prozent":"Noch nicht bestanden: "+PROZENT+" Prozent";
+  document.getElementById("ergebnisText").textContent=bestanden
+    ?"Alle fünf Stempel sind da. Trag deinen Namen ein, erzeuge die Lizenzkarte und lege sie in deinem OneNote-Heft ab."
+    :"Für die Lizenz brauchst du alle fünf Stempel und mindestens 80 Prozent. Starte neu, die Fragen werden neu gemischt.";
+  document.getElementById("lizenzBereich").style.display=bestanden?"block":"none";
+}
+function karteBauen(){
+  var name=(document.getElementById("feldName").value||"").trim();
+  var klasse=(document.getElementById("feldKlasse").value||"").trim();
+  if(!name){document.getElementById("feldName").focus();return;}
+  var c=document.createElement("canvas"); c.width=1000; c.height=600;
+  var x=c.getContext("2d");
+  x.fillStyle="#FFFFFF"; x.fillRect(0,0,1000,600);
+  x.fillStyle="#16241F"; x.fillRect(0,0,1000,14);
+  x.strokeStyle="#16241F"; x.lineWidth=6; x.strokeRect(3,3,994,594);
+  x.fillStyle="#16241F";
+  x.font="700 44px Avenir Next, Segoe UI, Helvetica, Arial, sans-serif";
+  x.fillText("Laborlizenz Chemie",56,106);
+  x.font="400 22px Avenir Next, Segoe UI, Helvetica, Arial, sans-serif";
+  x.fillStyle="#5C6B64";
+  x.fillText("Wiederholung der Sicherheitsunterweisung, Jahrgang 9/10",56,142);
+  x.strokeStyle="#DCE2DA"; x.lineWidth=3;
+  x.beginPath(); x.moveTo(56,170); x.lineTo(944,170); x.stroke();
+  var d=new Date();
+  var datum=("0"+d.getDate()).slice(-2)+"."+("0"+(d.getMonth()+1)).slice(-2)+"."+d.getFullYear();
+  var zeilen=[["Name",name],["Klasse",klasse||"—"],["Datum",datum],
+              ["Ergebnis",PROZENT+" Prozent ("+P.punkte+" von "+P.max+" Punkten)"]];
+  var y=222;
+  for(var i=0;i<zeilen.length;i++){
+    x.fillStyle="#5C6B64";
+    x.font="400 20px Avenir Next, Segoe UI, Helvetica, Arial, sans-serif";
+    x.fillText(zeilen[i][0],56,y);
+    x.fillStyle="#16241F";
+    x.font="700 30px Avenir Next, Segoe UI, Helvetica, Arial, sans-serif";
+    x.fillText(zeilen[i][1],250,y+2);
+    y+=66;
+  }
+  x.font="700 18px Avenir Next, Segoe UI, Helvetica, Arial, sans-serif";
+  for(var s=0;s<5;s++){
+    var bx=56+s*178;
+    x.fillStyle="#007A4D"; x.fillRect(bx,486,162,46);
+    x.fillStyle="#FFFFFF"; x.fillText("\u2713 "+STATIONEN[s],bx+18,516);
+  }
+  x.save(); x.translate(846,250); x.rotate(Math.PI/4);
+  x.strokeStyle="#D42A21"; x.lineWidth=12; x.strokeRect(-64,-64,128,128); x.restore();
+  x.fillStyle="#D42A21";
+  x.font="700 62px Avenir Next, Segoe UI, Helvetica, Arial, sans-serif";
+  x.fillText("!",836,274);
+  x.fillStyle="#5C6B64";
+  x.font="400 16px Avenir Next, Segoe UI, Helvetica, Arial, sans-serif";
+  x.fillText("Nachweis der Wiederholung nach RISU-NRW. Die Unterweisung erfolgt durch die Lehrkraft.",56,566);
+
+  var url=c.toDataURL("image/png");
+  var img=document.getElementById("lizenzBild");
+  img.src=url; img.style.display="block";
+  var a=document.getElementById("ladeLink");
+  a.href=url; a.download="Laborlizenz_"+name.replace(/[^\wÄÖÜäöüß]+/g,"_")+".png";
+  document.getElementById("exportLeiste").style.display="flex";
+  img.scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+stempelZeichnen();
+</script>
+</body>
+</html>
