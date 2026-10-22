@@ -34,11 +34,24 @@
 
   header {
     padding: 10px 16px 0;
-    font-size: 15px;
-    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
   }
 
-  header strong { color: var(--text); font-weight: 600; }
+  header strong { font-size: 15px; font-weight: 600; }
+
+  /* ── Reiter ── */
+  .tabs {
+    display: inline-flex;
+    border: 2px solid var(--border);
+    border-radius: 22px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .tabs .btn { border: none; border-radius: 0; }
 
   /* ── Bühne mit der Zeichenfläche ── */
   #stage {
@@ -73,6 +86,8 @@
   }
 
   .row.buttons { justify-content: center; flex-wrap: wrap; }
+
+  [hidden] { display: none !important; }
 
   .step {
     flex: none;
@@ -151,7 +166,7 @@
     cursor: pointer;
   }
 
-  .btn[aria-pressed=true] {
+  .btn[aria-pressed=true], .btn[aria-selected=true] {
     background: var(--accent);
     border-color: var(--accent);
     color: #fff;
@@ -168,8 +183,6 @@
   .seg .btn { border: none; border-radius: 0; }
 
   .seg-label { color: var(--muted); font-size: 15px; }
-
-  #lupeSwitch[hidden] { display: none; }
 
   /* ── Lehrermodus ── */
   #teacher {
@@ -210,10 +223,16 @@
 </head>
 <body>
 
-<header><strong>Aggregatzustände im Teilchenmodell</strong></header>
+<header>
+  <strong>Aggregatzustände im Teilchenmodell</strong>
+  <div class="tabs" role="tablist" aria-label="Teil auswählen">
+    <button class="btn" role="tab" id="tab1" aria-selected="true">1 Zustände</button>
+    <button class="btn" role="tab" id="tab2" aria-selected="false">2 Temperatur</button>
+  </div>
+</header>
 
 <div id="stage">
-  <canvas id="scene" aria-label="Becherglas mit Wasser und vergrößerter Ausschnitt mit Wasserteilchen"></canvas>
+  <canvas id="scene" aria-label="Bechergläser mit Wasser und vergrößerte Ausschnitte mit Wasserteilchen"></canvas>
 </div>
 
 <div class="controls">
@@ -225,7 +244,7 @@
     </div>
   </div>
 
-  <div class="row">
+  <div class="row" id="tempRow" hidden>
     <button class="step" id="minus" aria-label="Temperatur um 1 °C verringern">−</button>
     <input type="range" id="temp" min="-20" max="120" step="1" value="-10" aria-label="Temperatur">
     <button class="step" id="plus" aria-label="Temperatur um 1 °C erhöhen">+</button>
@@ -257,6 +276,13 @@ const CFG = {
   slowFactor:  0.25,  // Tempo in Zeitlupe
 };
 
+// Teil 1: feste Temperaturen der drei Zustände (werden nicht angezeigt)
+const STATES = [
+  { label: 'fest',      temp: -10 },
+  { label: 'flüssig',   temp: 20 },
+  { label: 'gasförmig', temp: 110 },
+];
+
 const COLORS = {
   particle:     '#5b5ef4',
   particleEdge: '#2b2d9e',
@@ -273,27 +299,13 @@ const COLORS = {
   label:        '#4a4a46',
 };
 
-/* ════════════════════════════════════════════════════════════════
-   Zustand der Bedienung
-   ════════════════════════════════════════════════════════════════ */
-const ui = {
-  temp:   document.getElementById('temp'),
-  out:    document.getElementById('readout'),
-  minus:  document.getElementById('minus'),
-  plus:   document.getElementById('plus'),
-  pause:  document.getElementById('pause'),
-  slow:   document.getElementById('slow'),
-  lupeSwitch: document.getElementById('lupeSwitch'),
-  lupeIn:     document.getElementById('lupeIn'),
-  lupeAbove:  document.getElementById('lupeAbove'),
-};
+const rand = (a, b) => a + Math.random() * (b - a);
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp01 = t => Math.min(1, Math.max(0, t));
+const TAU = Math.PI * 2;
+const SYM = TAU / 3;   // ein gleichseitiges Dreieck sieht nach 120° wieder gleich aus
 
-let T = Number(ui.temp.value);
-let paused = false;
-let slow = false;
-let lupeAbove = false;
-
-function phaseOf(t) {
+function phaseOf(t, lupeAbove) {
   if (t < 0) return 'solid';
   if (t === 0) return 'melt';
   if (t < 100) return 'liquid';
@@ -311,312 +323,361 @@ function viewOf(phase) {
 function fmt(t) { return (t < 0 ? '−' + (-t) : String(t)) + ' °C'; }
 
 /* ════════════════════════════════════════════════════════════════
-   Teilchensimulation im Lupenausschnitt
+   Teilchensimulation für einen Lupenausschnitt
    Koordinaten: Kasten Lx × Ly, Lupenkreis (Radius 200) in der Mitte
    ════════════════════════════════════════════════════════════════ */
-const sim = {
-  parts: [],
-  sites: [],
-  Lx: 420, Ly: 420,
-  dx: 84, dy: 70,
-  time: 0,
-  phase: null,
-  view: null,
-  wrapX: true, wrapY: true,
-  surfY: 0,
-  escapeTimer: 0,
-  fade: 1,
-};
-
-const rand = (a, b) => a + Math.random() * (b - a);
-const TAU = Math.PI * 2;
-const SYM = TAU / 3;   // ein gleichseitiges Dreieck sieht nach 120° wieder gleich aus
-
-function buildLattice() {
-  const s = CFG.size;
-  sim.dx = 1.5 * s * CFG.spacing;
-  sim.dy = 1.25 * s * CFG.spacing;
-  const cols = Math.ceil(410 / sim.dx);
-  let rows = Math.ceil(410 / sim.dy);
-  if (rows % 2) rows++;
-  sim.Lx = cols * sim.dx;
-  sim.Ly = rows * sim.dy;
-  sim.sites = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      sim.sites.push({
-        x: (c + 0.5 + (r % 2 ? 0.5 : 0)) * sim.dx,
-        y: (r + 0.5) * sim.dy,
-      });
-    }
+class Sim {
+  constructor(temp) {
+    this.parts = [];
+    this.sites = [];
+    this.time = 0;
+    this.phase = null;
+    this.view = null;
+    this.wrapX = true;
+    this.wrapY = true;
+    this.surfY = 0;
+    this.escapeTimer = 0;
+    this.fade = 1;
+    this.T = temp;
+    this.lupeAbove = false;
+    this.buildLattice();
+    this.setTemp(temp);
   }
-}
 
-function newParticle(x, y, mode) {
-  return {
-    x, y, vx: 0, vy: 0,
-    a: 0, va: 0,
-    hx: x, hy: y,
-    mode,
-    ph1: rand(0, TAU), ph2: rand(0, TAU), ph3: rand(0, TAU),
-    f1: rand(0.8, 1.2), f2: rand(0.8, 1.2), f3: rand(0.6, 1.0),
-  };
-}
-
-function lerp(a, b, t) { return a + (b - a) * t; }
-
-function liquidSpeed() {
-  return lerp(CFG.liqSpeed0, CFG.liqSpeed100, Math.min(Math.max(T, 0), 100) / 100);
-}
-
-function gasSpeed() {
-  return lerp(CFG.gasSpeed100, CFG.gasSpeed120, Math.min(Math.max(T - 100, 0), 20) / 20);
-}
-
-function solidAmp() {
-  return lerp(CFG.ampCold, CFG.ampMelt, Math.min(Math.max(T + 20, 0), 20) / 20);
-}
-
-function kick(p, speed) {
-  const ang = rand(0, TAU);
-  p.vx = Math.cos(ang) * speed;
-  p.vy = Math.sin(ang) * speed;
-  p.va = rand(-1, 1) * speed / 40;
-}
-
-// Abstand mit Berücksichtigung des periodischen Ausschnitts
-function delta(ax, ay, bx, by) {
-  let dx = bx - ax, dy = by - ay;
-  if (sim.wrapX) dx -= sim.Lx * Math.round(dx / sim.Lx);
-  if (sim.wrapY) dy -= sim.Ly * Math.round(dy / sim.Ly);
-  return [dx, dy];
-}
-
-// Jedem Gitterplatz das nächstgelegene freie Teilchen zuordnen
-function assignHomes(sites, parts) {
-  const free = new Set(parts);
-  for (const s of sites) {
-    let best = null, bd = Infinity;
-    for (const p of free) {
-      const [dx, dy] = delta(p.x, p.y, s.x, s.y);
-      const d = dx * dx + dy * dy;
-      if (d < bd) { bd = d; best = p; }
-    }
-    if (!best) break;
-    free.delete(best);
-    best.hx = s.x; best.hy = s.y;
-    best.mode = 'solid';
-  }
-  return free;
-}
-
-function meltBoundary() { return sim.Lx * 0.5; }
-
-// Ansicht komplett neu aufbauen (Lupe zeigt einen anderen Ort)
-function initView(view, phase) {
-  sim.parts = [];
-  sim.view = view;
-  const s = CFG.size;
-
-  if (view === 'bulk') {
-    sim.wrapX = true; sim.wrapY = true;
-    for (const st of sim.sites) sim.parts.push(newParticle(st.x, st.y, 'solid'));
-  } else if (view === 'surface') {
-    sim.wrapX = true; sim.wrapY = false;
-    sim.surfY = sim.Ly * 0.42;
-    for (const st of sim.sites) {
-      if (st.y > sim.surfY + s * 0.3) {
-        const p = newParticle(st.x + rand(-8, 8), st.y + rand(-8, 8), 'liquid');
-        p.a = rand(0, TAU);
-        kick(p, liquidSpeed());
-        sim.parts.push(p);
+  buildLattice() {
+    const s = CFG.size;
+    this.dx = 1.5 * s * CFG.spacing;
+    this.dy = 1.25 * s * CFG.spacing;
+    const cols = Math.ceil(410 / this.dx);
+    let rows = Math.ceil(410 / this.dy);
+    if (rows % 2) rows++;
+    this.Lx = cols * this.dx;
+    this.Ly = rows * this.dy;
+    this.sites = [];
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        this.sites.push({
+          x: (c + 0.5 + (r % 2 ? 0.5 : 0)) * this.dx,
+          y: (r + 0.5) * this.dy,
+        });
       }
     }
-    sim.escapeTimer = rand(0.3, CFG.escapeEvery);
-  } else {
-    sim.wrapX = true; sim.wrapY = true;
-    for (let i = 0; i < CFG.gasCount; i++) {
-      let p, tries = 0;
-      do {
-        p = newParticle(rand(0, sim.Lx), rand(0, sim.Ly), 'gas');
-        tries++;
-      } while (tries < 50 && sim.parts.some(q => Math.hypot(...delta(p.x, p.y, q.x, q.y)) < s * 2));
-      p.a = rand(0, TAU);
-      kick(p, gasSpeed());
-      sim.parts.push(p);
-    }
-  }
-  sim.phase = null;
-  applyPhase(phase);
-  sim.fade = 0;
-}
-
-// Übergang innerhalb derselben Ansicht (z. B. fest → flüssig)
-function applyPhase(phase) {
-  const prev = sim.phase;
-  sim.phase = phase;
-  if (sim.view !== 'bulk') return;
-
-  if (phase === 'solid') {
-    sim.wrapX = true;
-    assignHomes(sim.sites, sim.parts);
-  } else if (phase === 'liquid') {
-    sim.wrapX = true;
-    for (const p of sim.parts) {
-      if (p.mode !== 'liquid') { p.mode = 'liquid'; kick(p, liquidSpeed()); }
-    }
-  } else if (phase === 'melt') {
-    sim.wrapX = false;
-    const xb = meltBoundary();
-    const iceSites = sim.sites.filter(s => s.x < xb);
-    for (const p of sim.parts) p.mode = 'liquid';
-    const rest = assignHomes(iceSites, sim.parts);
-    for (const p of rest) {
-      if (prev !== 'liquid') kick(p, liquidSpeed());
-      p.mode = 'liquid';
-    }
-  }
-}
-
-function setTemp(t) {
-  T = Math.max(-20, Math.min(120, t));
-  ui.temp.value = T;
-  ui.out.textContent = fmt(T);
-  ui.lupeSwitch.hidden = T !== 100;
-  syncPhase();
-}
-
-function syncPhase() {
-  const phase = phaseOf(T);
-  const view = viewOf(phase);
-  if (view !== sim.view) initView(view, phase);
-  else if (phase !== sim.phase) applyPhase(phase);
-}
-
-/* ── Physik ── */
-function step(dt) {
-  sim.time += dt;
-  const s = CFG.size;
-  const D = s * 1.1;          // Mindestabstand zweier Teilchen
-  const parts = sim.parts;
-  const vl = liquidSpeed();
-  const vg = gasSpeed();
-
-  // Bewegung
-  for (const p of parts) {
-    if (p.mode === 'solid') {
-      const k = Math.min(1, 5 * dt);
-      const [dx, dy] = delta(p.x, p.y, p.hx, p.hy);
-      p.x += dx * k; p.y += dy * k;
-      const target = Math.round(p.a / SYM) * SYM;
-      p.a += (target - p.a) * k;
-      continue;
-    }
-
-    if (p.mode === 'liquid') {
-      // Zufällige Richtungsänderungen, Tempo wird zur Zielgeschwindigkeit geführt
-      const turn = rand(-1, 1) * 2.5 * Math.sqrt(dt);
-      const c = Math.cos(turn), sn = Math.sin(turn);
-      const vx = p.vx * c - p.vy * sn, vy = p.vx * sn + p.vy * c;
-      const sp = Math.hypot(vx, vy) || 1;
-      const f = 1 + (vl / sp - 1) * Math.min(1, 3 * dt);
-      p.vx = vx * f; p.vy = vy * f;
-      p.va += rand(-1, 1) * 4 * dt;
-      p.va = Math.max(-vl / 30, Math.min(vl / 30, p.va));
-
-      if (sim.phase === 'melt' && p.x < meltBoundary() + s * 0.2) p.vx += 300 * dt;
-      if (sim.view === 'surface' && p.y < sim.surfY) p.vy += 900 * dt;
-    }
-
-    if (p.mode === 'gas') {
-      const sp = Math.hypot(p.vx, p.vy) || 1;
-      const f = 1 + (vg / sp - 1) * Math.min(1, 2 * dt);
-      p.vx *= f; p.vy *= f;
-    }
-
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.a += p.va * dt;
   }
 
-  // Zusammenstöße (Teilchen als Scheiben)
-  for (let i = 0; i < parts.length; i++) {
-    const a = parts[i];
-    for (let j = i + 1; j < parts.length; j++) {
-      const b = parts[j];
-      if (a.mode === 'escape' || b.mode === 'escape') continue;
-      if (a.mode === 'solid' && b.mode === 'solid') continue;
-      const [dx, dy] = delta(a.x, a.y, b.x, b.y);
-      const d2 = dx * dx + dy * dy;
-      if (d2 >= D * D || d2 === 0) continue;
-      const d = Math.sqrt(d2);
-      const nx = dx / d, ny = dy / d;
-      const overlap = D - d;
-      const aFix = a.mode === 'solid', bFix = b.mode === 'solid';
-      const wa = aFix ? 0 : (bFix ? 1 : 0.5);
-      const wb = bFix ? 0 : (aFix ? 1 : 0.5);
-      a.x -= nx * overlap * wa; a.y -= ny * overlap * wa;
-      b.x += nx * overlap * wb; b.y += ny * overlap * wb;
+  // nach Änderung von Größe oder Abstand im Lehrermodus
+  rebuild() {
+    this.buildLattice();
+    this.view = null;
+    this.setTemp(this.T, this.lupeAbove);
+  }
 
-      // Geschwindigkeiten entlang der Verbindungslinie tauschen bzw. spiegeln
-      const rv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
-      if (rv < 0) {
-        if (!aFix && !bFix) {
-          a.vx += rv * nx; a.vy += rv * ny;
-          b.vx -= rv * nx; b.vy -= rv * ny;
-        } else if (aFix) {
-          const vn = b.vx * nx + b.vy * ny;
-          if (vn < 0) { b.vx -= 2 * vn * nx; b.vy -= 2 * vn * ny; }
-        } else {
-          const vn = a.vx * nx + a.vy * ny;
-          if (vn > 0) { a.vx -= 2 * vn * nx; a.vy -= 2 * vn * ny; }
+  setTemp(t, lupeAbove = false) {
+    this.T = t;
+    this.lupeAbove = lupeAbove;
+    const phase = phaseOf(t, lupeAbove);
+    const view = viewOf(phase);
+    if (view !== this.view) this.initView(view, phase);
+    else if (phase !== this.phase) this.applyPhase(phase);
+  }
+
+  liquidSpeed() {
+    return lerp(CFG.liqSpeed0, CFG.liqSpeed100, clamp01(this.T / 100));
+  }
+
+  gasSpeed() {
+    return lerp(CFG.gasSpeed100, CFG.gasSpeed120, clamp01((this.T - 100) / 20));
+  }
+
+  solidAmp() {
+    return lerp(CFG.ampCold, CFG.ampMelt, clamp01((this.T + 20) / 20));
+  }
+
+  newParticle(x, y, mode) {
+    return {
+      x, y, vx: 0, vy: 0,
+      a: 0, va: 0,
+      hx: x, hy: y,
+      mode,
+      ph1: rand(0, TAU), ph2: rand(0, TAU), ph3: rand(0, TAU),
+      f1: rand(0.8, 1.2), f2: rand(0.8, 1.2), f3: rand(0.6, 1.0),
+    };
+  }
+
+  kick(p, speed) {
+    const ang = rand(0, TAU);
+    p.vx = Math.cos(ang) * speed;
+    p.vy = Math.sin(ang) * speed;
+    p.va = rand(-1, 1) * speed / 40;
+  }
+
+  // Abstand mit Berücksichtigung des periodischen Ausschnitts
+  delta(ax, ay, bx, by) {
+    let dx = bx - ax, dy = by - ay;
+    if (this.wrapX) dx -= this.Lx * Math.round(dx / this.Lx);
+    if (this.wrapY) dy -= this.Ly * Math.round(dy / this.Ly);
+    return [dx, dy];
+  }
+
+  // Jedem Gitterplatz das nächstgelegene freie Teilchen zuordnen
+  assignHomes(sites, parts) {
+    const free = new Set(parts);
+    for (const s of sites) {
+      let best = null, bd = Infinity;
+      for (const p of free) {
+        const [dx, dy] = this.delta(p.x, p.y, s.x, s.y);
+        const d = dx * dx + dy * dy;
+        if (d < bd) { bd = d; best = p; }
+      }
+      if (!best) break;
+      free.delete(best);
+      best.hx = s.x; best.hy = s.y;
+      best.mode = 'solid';
+    }
+    return free;
+  }
+
+  meltBoundary() { return this.Lx * 0.5; }
+
+  // Ansicht komplett neu aufbauen (Lupe zeigt einen anderen Ort)
+  initView(view, phase) {
+    this.parts = [];
+    this.view = view;
+    const s = CFG.size;
+
+    if (view === 'bulk') {
+      this.wrapX = true; this.wrapY = true;
+      for (const st of this.sites) this.parts.push(this.newParticle(st.x, st.y, 'solid'));
+    } else if (view === 'surface') {
+      this.wrapX = true; this.wrapY = false;
+      this.surfY = this.Ly * 0.42;
+      for (const st of this.sites) {
+        if (st.y > this.surfY + s * 0.3) {
+          const p = this.newParticle(st.x + rand(-8, 8), st.y + rand(-8, 8), 'liquid');
+          p.a = rand(0, TAU);
+          this.kick(p, this.liquidSpeed());
+          this.parts.push(p);
+        }
+      }
+      this.escapeTimer = rand(0.3, CFG.escapeEvery);
+    } else {
+      this.wrapX = true; this.wrapY = true;
+      for (let i = 0; i < CFG.gasCount; i++) {
+        let p, tries = 0;
+        do {
+          p = this.newParticle(rand(0, this.Lx), rand(0, this.Ly), 'gas');
+          tries++;
+        } while (tries < 50 && this.parts.some(q => Math.hypot(...this.delta(p.x, p.y, q.x, q.y)) < s * 2));
+        p.a = rand(0, TAU);
+        this.kick(p, this.gasSpeed());
+        this.parts.push(p);
+      }
+    }
+    this.phase = null;
+    this.applyPhase(phase);
+    this.fade = 0;
+  }
+
+  // Übergang innerhalb derselben Ansicht (z. B. fest → flüssig)
+  applyPhase(phase) {
+    const prev = this.phase;
+    this.phase = phase;
+    if (this.view !== 'bulk') return;
+
+    if (phase === 'solid') {
+      this.wrapX = true;
+      this.assignHomes(this.sites, this.parts);
+    } else if (phase === 'liquid') {
+      this.wrapX = true;
+      for (const p of this.parts) {
+        if (p.mode !== 'liquid') { p.mode = 'liquid'; this.kick(p, this.liquidSpeed()); }
+      }
+    } else if (phase === 'melt') {
+      this.wrapX = false;
+      const xb = this.meltBoundary();
+      const iceSites = this.sites.filter(s => s.x < xb);
+      for (const p of this.parts) p.mode = 'liquid';
+      const rest = this.assignHomes(iceSites, this.parts);
+      for (const p of rest) {
+        if (prev !== 'liquid') this.kick(p, this.liquidSpeed());
+        p.mode = 'liquid';
+      }
+    }
+  }
+
+  step(dt) {
+    this.time += dt;
+    const s = CFG.size;
+    const D = s * 1.1;          // Mindestabstand zweier Teilchen
+    const parts = this.parts;
+    const vl = this.liquidSpeed();
+    const vg = this.gasSpeed();
+
+    // Bewegung
+    for (const p of parts) {
+      if (p.mode === 'solid') {
+        const k = Math.min(1, 5 * dt);
+        const [dx, dy] = this.delta(p.x, p.y, p.hx, p.hy);
+        p.x += dx * k; p.y += dy * k;
+        const target = Math.round(p.a / SYM) * SYM;
+        p.a += (target - p.a) * k;
+        continue;
+      }
+
+      if (p.mode === 'liquid') {
+        // Zufällige Richtungsänderungen, Tempo wird zur Zielgeschwindigkeit geführt
+        const turn = rand(-1, 1) * 2.5 * Math.sqrt(dt);
+        const c = Math.cos(turn), sn = Math.sin(turn);
+        const vx = p.vx * c - p.vy * sn, vy = p.vx * sn + p.vy * c;
+        const sp = Math.hypot(vx, vy) || 1;
+        const f = 1 + (vl / sp - 1) * Math.min(1, 3 * dt);
+        p.vx = vx * f; p.vy = vy * f;
+        p.va += rand(-1, 1) * 4 * dt;
+        p.va = Math.max(-vl / 30, Math.min(vl / 30, p.va));
+
+        if (this.phase === 'melt' && p.x < this.meltBoundary() + s * 0.2) p.vx += 300 * dt;
+        if (this.view === 'surface' && p.y < this.surfY) p.vy += 900 * dt;
+      }
+
+      if (p.mode === 'gas') {
+        const sp = Math.hypot(p.vx, p.vy) || 1;
+        const f = 1 + (vg / sp - 1) * Math.min(1, 2 * dt);
+        p.vx *= f; p.vy *= f;
+      }
+
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.a += p.va * dt;
+    }
+
+    // Zusammenstöße (Teilchen als Scheiben)
+    for (let i = 0; i < parts.length; i++) {
+      const a = parts[i];
+      for (let j = i + 1; j < parts.length; j++) {
+        const b = parts[j];
+        if (a.mode === 'escape' || b.mode === 'escape') continue;
+        if (a.mode === 'solid' && b.mode === 'solid') continue;
+        const [dx, dy] = this.delta(a.x, a.y, b.x, b.y);
+        const d2 = dx * dx + dy * dy;
+        if (d2 >= D * D || d2 === 0) continue;
+        const d = Math.sqrt(d2);
+        const nx = dx / d, ny = dy / d;
+        const overlap = D - d;
+        const aFix = a.mode === 'solid', bFix = b.mode === 'solid';
+        const wa = aFix ? 0 : (bFix ? 1 : 0.5);
+        const wb = bFix ? 0 : (aFix ? 1 : 0.5);
+        a.x -= nx * overlap * wa; a.y -= ny * overlap * wa;
+        b.x += nx * overlap * wb; b.y += ny * overlap * wb;
+
+        // Geschwindigkeiten entlang der Verbindungslinie tauschen bzw. spiegeln
+        const rv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+        if (rv < 0) {
+          if (!aFix && !bFix) {
+            a.vx += rv * nx; a.vy += rv * ny;
+            b.vx -= rv * nx; b.vy -= rv * ny;
+          } else if (aFix) {
+            const vn = b.vx * nx + b.vy * ny;
+            if (vn < 0) { b.vx -= 2 * vn * nx; b.vy -= 2 * vn * ny; }
+          } else {
+            const vn = a.vx * nx + a.vy * ny;
+            if (vn > 0) { a.vx -= 2 * vn * nx; a.vy -= 2 * vn * ny; }
+          }
         }
       }
     }
-  }
 
-  // Ränder des Ausschnitts
-  for (const p of parts) {
-    if (p.mode === 'solid') continue;
-    if (p.mode === 'escape') continue;
-    if (sim.wrapX) p.x = ((p.x % sim.Lx) + sim.Lx) % sim.Lx;
-    else if (p.x < 0) { p.x = 0; p.vx = Math.abs(p.vx); }
-    else if (p.x > sim.Lx) { p.x = sim.Lx; p.vx = -Math.abs(p.vx); }
-    if (sim.wrapY) p.y = ((p.y % sim.Ly) + sim.Ly) % sim.Ly;
-    else if (p.y > sim.Ly) { p.y = sim.Ly; p.vy = -Math.abs(p.vy); }
-  }
-
-  // Sieden: ab und zu verlässt ein Teilchen an der Oberfläche den Teilchenverband
-  if (sim.view === 'surface') {
-    sim.escapeTimer -= dt;
-    if (sim.escapeTimer <= 0) {
-      sim.escapeTimer = CFG.escapeEvery * rand(0.6, 1.4);
-      let top = null;
-      for (const p of parts) {
-        if (p.mode === 'liquid' && (!top || p.y < top.y)) top = p;
-      }
-      if (top) {
-        top.mode = 'escape';
-        const ang = -Math.PI / 2 + rand(-0.5, 0.5);
-        top.vx = Math.cos(ang) * vg;
-        top.vy = Math.sin(ang) * vg;
-        top.va = rand(-1, 1) * 4;
-        // Nachschub unten am (unsichtbaren) Rand des Ausschnitts
-        const q = newParticle(Math.random() < 0.5 ? 4 : sim.Lx - 4, sim.Ly - 4, 'liquid');
-        q.a = rand(0, TAU);
-        kick(q, vl);
-        q.vy = -Math.abs(q.vy);
-        parts.push(q);
-      }
+    // Ränder des Ausschnitts
+    for (const p of parts) {
+      if (p.mode === 'solid' || p.mode === 'escape') continue;
+      if (this.wrapX) p.x = ((p.x % this.Lx) + this.Lx) % this.Lx;
+      else if (p.x < 0) { p.x = 0; p.vx = Math.abs(p.vx); }
+      else if (p.x > this.Lx) { p.x = this.Lx; p.vx = -Math.abs(p.vx); }
+      if (this.wrapY) p.y = ((p.y % this.Ly) + this.Ly) % this.Ly;
+      else if (p.y > this.Ly) { p.y = this.Ly; p.vy = -Math.abs(p.vy); }
     }
-    sim.parts = parts.filter(p => p.mode !== 'escape' || p.y > -s * 2);
+
+    // Sieden: ab und zu verlässt ein Teilchen an der Oberfläche den Teilchenverband
+    if (this.view === 'surface') {
+      this.escapeTimer -= dt;
+      if (this.escapeTimer <= 0) {
+        this.escapeTimer = CFG.escapeEvery * rand(0.6, 1.4);
+        let top = null;
+        for (const p of parts) {
+          if (p.mode === 'liquid' && (!top || p.y < top.y)) top = p;
+        }
+        if (top) {
+          top.mode = 'escape';
+          const ang = -Math.PI / 2 + rand(-0.5, 0.5);
+          top.vx = Math.cos(ang) * vg;
+          top.vy = Math.sin(ang) * vg;
+          top.va = rand(-1, 1) * 4;
+          // Nachschub unten am (unsichtbaren) Rand des Ausschnitts
+          const q = this.newParticle(Math.random() < 0.5 ? 4 : this.Lx - 4, this.Ly - 4, 'liquid');
+          q.a = rand(0, TAU);
+          this.kick(q, vl);
+          q.vy = -Math.abs(q.vy);
+          parts.push(q);
+        }
+      }
+      this.parts = parts.filter(p => p.mode !== 'escape' || p.y > -s * 2);
+    }
+  }
+
+  // Lupeninhalt zeichnen: Mittelpunkt (cx, cy), Radius r in Bildschirmpunkten
+  draw(c, cx, cy, r) {
+    c.save();
+    c.translate(cx, cy);
+    c.beginPath();
+    c.arc(0, 0, r, 0, TAU);
+    c.fillStyle = COLORS.lupeBg;
+    c.fill();
+    c.clip();
+    c.scale(r / 200, r / 200);
+    c.translate(-this.Lx / 2, -this.Ly / 2);
+
+    c.globalAlpha = this.fade;
+    c.fillStyle = COLORS.particle;
+    c.strokeStyle = COLORS.particleEdge;
+    c.lineWidth = 2.5;
+    c.lineJoin = 'round';
+
+    const s = CFG.size;
+    const amp = this.solidAmp();
+    const om = TAU * CFG.vibFreq;
+    const t = this.time;
+
+    for (const p of this.parts) {
+      let x = p.x, y = p.y, a = p.a;
+      if (p.mode === 'solid') {
+        x += amp * Math.sin(om * p.f1 * t + p.ph1);
+        y += amp * Math.sin(om * p.f2 * t + p.ph2);
+        a += amp * 0.012 * Math.sin(om * p.f3 * t + p.ph3);
+      }
+      // Teilchen am Rand des periodischen Ausschnitts doppelt zeichnen
+      const xs = [x], ys = [y];
+      if (this.wrapX || p.mode === 'solid') {
+        if (x < s) xs.push(x + this.Lx);
+        if (x > this.Lx - s) xs.push(x - this.Lx);
+      }
+      if (this.wrapY || p.mode === 'solid') {
+        if (y < s) ys.push(y + this.Ly);
+        if (y > this.Ly - s) ys.push(y - this.Ly);
+      }
+      for (const xx of xs) for (const yy of ys) drawTriangle(c, xx, yy, a, s);
+    }
+    c.restore();
+
+    c.beginPath();
+    c.arc(cx, cy, r, 0, TAU);
+    c.strokeStyle = COLORS.ink;
+    c.lineWidth = 3;
+    c.stroke();
   }
 }
 
 /* ════════════════════════════════════════════════════════════════
    Stoffebene: Becherglas (lokale Koordinaten 200 × 280, y nach unten)
    ════════════════════════════════════════════════════════════════ */
-const BEAKER = { w: 200, h: 280, water: 126, left: -40, right: 230, top: -200, bottom: 290 };
+const BEAKER = { w: 200, h: 280, water: 126 };
 
 const ICE_PILE = [
   { x: 42,  y: 244, r: -0.08 }, { x: 102, y: 246, r: 0.05 }, { x: 160, y: 243, r: -0.04 },
@@ -627,7 +688,43 @@ const ICE_FLOAT = [
   { x: 52, y: 146, r: 0.1 }, { x: 116, y: 150, r: -0.06 },
 ];
 
-const macro = { bubbles: [], steam: [] };
+// Blasen und Dampf im Becherglas
+class Macro {
+  constructor() {
+    this.bubbles = [];
+    this.steam = [];
+    this.time = 0;
+  }
+
+  step(dt, phase) {
+    this.time += dt;
+    const boiling = phase === 'boil' || phase === 'boilAbove';
+    const gas = phase === 'gas';
+
+    if (boiling && Math.random() < dt * 9) {
+      this.bubbles.push({ x: rand(20, 175), y: rand(255, 272), r: rand(2.5, 6), v: rand(50, 90) });
+    }
+    for (const b of this.bubbles) { b.y -= b.v * dt; b.x += rand(-1, 1) * 20 * dt; b.r += dt * 2; }
+    this.bubbles = this.bubbles.filter(b => boiling && b.y > BEAKER.water + b.r);
+
+    // Wasserdampf, der aus dem Becherglas entweicht
+    const rate = gas ? 30 : boiling ? 10 : 0;
+    if (Math.random() < dt * rate) {
+      this.steam.push({
+        x: rand(15, 185),
+        y: gas ? rand(150, 272) : BEAKER.water - 4,
+        r: rand(3, 5.5),
+        v: rand(30, 60),
+        drift: rand(-12, 12),
+      });
+    }
+    for (const d of this.steam) {
+      d.y -= d.v * dt;
+      d.x += (d.drift + rand(-1, 1) * 30) * dt;
+    }
+    this.steam = this.steam.filter(d => (gas || boiling) && d.y > -110);
+  }
+}
 
 function focusPoint(phase) {
   switch (phase) {
@@ -640,75 +737,12 @@ function focusPoint(phase) {
   }
 }
 
-function thermoRaised(phase) { return phase === 'boilAbove'; }
-
-function stepMacro(dt, phase) {
-  const boiling = phase === 'boil' || phase === 'boilAbove';
-  const gas = phase === 'gas';
-
-  // Blasen im siedenden Wasser
-  if (boiling && Math.random() < dt * 9) {
-    macro.bubbles.push({ x: rand(20, 175), y: rand(255, 272), r: rand(2.5, 6), v: rand(50, 90) });
-  }
-  for (const b of macro.bubbles) { b.y -= b.v * dt; b.x += rand(-1, 1) * 20 * dt; b.r += dt * 2; }
-  macro.bubbles = macro.bubbles.filter(b => boiling && b.y > BEAKER.water + b.r);
-
-  // Wasserdampf, der aus dem Becherglas entweicht
-  const rate = gas ? 30 : boiling ? 10 : 0;
-  if (Math.random() < dt * rate) {
-    macro.steam.push({
-      x: rand(15, 185),
-      y: gas ? rand(150, 272) : BEAKER.water - 4,
-      r: rand(3, 5.5),
-      v: rand(30, 60),
-      drift: rand(-12, 12),
-    });
-  }
-  for (const d of macro.steam) {
-    d.y -= d.v * dt;
-    d.x += (d.drift + rand(-1, 1) * 30) * dt;
-  }
-  macro.steam = macro.steam.filter(d => (gas || boiling) && d.y > -110);
-}
-
 /* ════════════════════════════════════════════════════════════════
-   Zeichnen
+   Zeichenhilfen
    ════════════════════════════════════════════════════════════════ */
 const canvas = document.getElementById('scene');
 const ctx = canvas.getContext('2d');
-let W = 0, H = 0, layout = null;
-
-function resize() {
-  const r = canvas.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
-  W = r.width; H = r.height;
-  canvas.width = Math.round(W * dpr);
-  canvas.height = Math.round(H * dpr);
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  layout = computeLayout();
-}
-
-function computeLayout() {
-  const bw = BEAKER.right - BEAKER.left, bh = BEAKER.bottom - BEAKER.top;
-  const labelH = 34;
-  if (W >= H * 1.15) {
-    // Querformat: Becherglas links, Lupe rechts
-    const R = Math.min((H - labelH - 16) / 2, W * 0.25);
-    const lupe = { x: W * 0.69, y: labelH + (H - labelH) / 2, r: R };
-    const k = Math.min((H - labelH - 10) / bh, (W * 0.38) / bw);
-    const bx = W * 0.24 - (BEAKER.left + bw / 2) * k;
-    const by = H - 8 - BEAKER.bottom * k;
-    return { lupe, beaker: { x: bx, y: by, k }, labels: { bx: W * 0.24, lx: lupe.x, y: 22 } };
-  }
-  // Hochformat: Lupe oben rechts, Becherglas unten links
-  const R = Math.min(W * 0.38, (H - labelH) * 0.27);
-  const lupe = { x: W - 16 - R, y: labelH + R + 4, r: R };
-  const top = lupe.y + R + 10;
-  const k = Math.min((H - top - 8) / bh, (W * 0.55) / bw);
-  const bx = W * 0.28 - (BEAKER.left + bw / 2) * k;
-  const by = H - 8 - BEAKER.bottom * k;
-  return { lupe, beaker: { x: bx, y: by, k }, labels: { bx: W * 0.28, lx: lupe.x, y: 22, by: top + 4 } };
-}
+let W = 0, H = 0;
 
 function roundRect(c, x, y, w, h, r) {
   c.beginPath();
@@ -718,6 +752,19 @@ function roundRect(c, x, y, w, h, r) {
   c.arcTo(x, y + h, x, y, r);
   c.arcTo(x, y, x + w, y, r);
   c.closePath();
+}
+
+function drawTriangle(c, x, y, a, s) {
+  const r = s / Math.sqrt(3);      // Abstand Mitte → Ecke
+  c.beginPath();
+  for (let i = 0; i < 3; i++) {
+    const ang = a - Math.PI / 2 + i * SYM;
+    const px = x + r * Math.cos(ang), py = y + r * Math.sin(ang);
+    i ? c.lineTo(px, py) : c.moveTo(px, py);
+  }
+  c.closePath();
+  c.fill();
+  c.stroke();
 }
 
 function beakerPath(c) {
@@ -763,14 +810,12 @@ function drawIce(c, cube) {
   c.restore();
 }
 
-function drawBeaker(phase) {
-  const { x, y, k } = layout.beaker;
-  const c = ctx;
+// Becherglas an Position (x, y) mit Maßstab k; temp = null → ohne Thermometer
+function drawBeaker(c, x, y, k, phase, macro, temp, raised) {
   c.save();
   c.translate(x, y);
   c.scale(k, k);
 
-  // Glas (Füllung)
   beakerPath(c);
   c.lineTo(0, 0);
   c.fillStyle = COLORS.glassFill;
@@ -781,20 +826,21 @@ function drawBeaker(phase) {
   c.clip();
 
   const w = BEAKER.w, h = BEAKER.h, wy = BEAKER.water;
-  const hasWater = phase === 'melt' || phase === 'liquid' || phase === 'boil' || phase === 'boilAbove';
+  const boiling = phase === 'boil' || phase === 'boilAbove';
+  const hasWater = phase === 'melt' || phase === 'liquid' || boiling;
 
   if (phase === 'solid') ICE_PILE.forEach(cube => drawIce(c, cube));
   if (phase === 'melt') ICE_FLOAT.forEach(cube => drawIce(c, cube));
 
   if (hasWater) {
     c.beginPath();
-    if (phase === 'boil' || phase === 'boilAbove') {
-      c.moveTo(0, wy);
+    c.moveTo(0, wy);
+    if (boiling) {
       for (let i = 0; i <= 20; i++) {
-        c.lineTo(i * w / 20, wy + Math.sin(sim.time * 7 + i * 1.3) * 2);
+        c.lineTo(i * w / 20, wy + Math.sin(macro.time * 7 + i * 1.3) * 2);
       }
     } else {
-      c.moveTo(0, wy); c.lineTo(w, wy);
+      c.lineTo(w, wy);
     }
     c.lineTo(w, h); c.lineTo(0, h); c.closePath();
     c.fillStyle = COLORS.water;
@@ -819,8 +865,7 @@ function drawBeaker(phase) {
 
   // Dampf (darf das Glas verlassen)
   for (const d of macro.steam) {
-    const alpha = d.y < 0 ? Math.max(0, 1 + d.y / 110) : 1;
-    c.globalAlpha = alpha;
+    c.globalAlpha = d.y < 0 ? Math.max(0, 1 + d.y / 110) : 1;
     c.beginPath(); c.arc(d.x, d.y, d.r, 0, TAU);
     c.strokeStyle = COLORS.steam;
     c.lineWidth = 1.8;
@@ -838,7 +883,6 @@ function drawBeaker(phase) {
     c.stroke();
   }
 
-  // Glas (Umriss)
   beakerPath(c);
   c.strokeStyle = COLORS.glass;
   c.lineWidth = 4;
@@ -846,12 +890,12 @@ function drawBeaker(phase) {
   c.lineCap = 'round';
   c.stroke();
 
-  drawThermometer(c, phase);
+  if (temp !== null) drawThermometer(c, temp, raised);
   c.restore();
 }
 
-function drawThermometer(c, phase) {
-  const off = thermoRaised(phase) ? -150 : 0;
+function drawThermometer(c, temp, raised) {
+  const off = raised ? -150 : 0;
   const tx = 168, top = -40 + off, bulb = 252 + off;
   // Stab
   roundRect(c, tx - 7, top, 14, bulb - top, 7);
@@ -861,7 +905,7 @@ function drawThermometer(c, phase) {
   c.lineWidth = 2;
   c.stroke();
   // Flüssigkeitssäule
-  const frac = (T + 20) / 140;
+  const frac = (temp + 20) / 140;
   const colTop = bulb - 14 - frac * (bulb - top - 26);
   c.fillStyle = COLORS.thermoRed;
   roundRect(c, tx - 3, colTop, 6, bulb - colTop, 3);
@@ -870,11 +914,11 @@ function drawThermometer(c, phase) {
   c.fill();
   c.strokeStyle = COLORS.glass;
   c.stroke();
-  // Anzeige
-  const label = fmt(T);
+  // Anzeige an fester Stelle neben dem Stab
+  const label = fmt(temp);
   c.font = '700 28px system-ui, -apple-system, sans-serif';
   const tw = c.measureText(label).width + 22;
-  const lx = 70, ly = -70;           // Anzeige bleibt an fester Stelle neben dem Stab
+  const lx = 70, ly = -70;
   roundRect(c, lx - tw / 2, ly - 20, tw, 40, 8);
   c.fillStyle = '#ffffff';
   c.fill();
@@ -887,27 +931,8 @@ function drawThermometer(c, phase) {
   c.fillText(label, lx, ly + 1);
 }
 
-function drawTriangle(c, x, y, a, s) {
-  const r = s / Math.sqrt(3);      // Abstand Mitte → Ecke
-  c.beginPath();
-  for (let i = 0; i < 3; i++) {
-    const ang = a - Math.PI / 2 + i * SYM;
-    const px = x + r * Math.cos(ang), py = y + r * Math.sin(ang);
-    i ? c.lineTo(px, py) : c.moveTo(px, py);
-  }
-  c.closePath();
-  c.fill();
-  c.stroke();
-}
-
-function drawLupe(phase) {
-  const { lupe } = layout;
-  const bk = layout.beaker;
-  const fp = focusPoint(phase);
-  const P = { x: bk.x + fp.x * bk.k, y: bk.y + fp.y * bk.k };
-  const c = ctx;
-
-  // Verbindungslinien (Tangenten vom Fokuspunkt an die Lupe)
+// Verbindungslinien vom Fokuspunkt P an die Lupe (Tangenten) und kleiner Kreis
+function drawConnector(c, P, lupe) {
   const dx = P.x - lupe.x, dy = P.y - lupe.y;
   const d = Math.hypot(dx, dy);
   c.strokeStyle = COLORS.ink;
@@ -926,98 +951,176 @@ function drawLupe(phase) {
   c.fillStyle = '#ffffff';
   c.fill();
   c.stroke();
-
-  // Inhalt der Lupe
-  const k = lupe.r / 200;
-  c.save();
-  c.translate(lupe.x, lupe.y);
-  c.beginPath();
-  c.arc(0, 0, lupe.r, 0, TAU);
-  c.fillStyle = COLORS.lupeBg;
-  c.fill();
-  c.clip();
-  c.scale(k, k);
-  c.translate(-sim.Lx / 2, -sim.Ly / 2);
-
-  c.globalAlpha = sim.fade;
-  c.fillStyle = COLORS.particle;
-  c.strokeStyle = COLORS.particleEdge;
-  c.lineWidth = 2.5;
-  c.lineJoin = 'round';
-
-  const s = CFG.size;
-  const amp = solidAmp();
-  const om = TAU * CFG.vibFreq;
-  const t = sim.time;
-  const margin = s;
-
-  for (const p of sim.parts) {
-    let x = p.x, y = p.y, a = p.a;
-    if (p.mode === 'solid') {
-      x += amp * Math.sin(om * p.f1 * t + p.ph1);
-      y += amp * Math.sin(om * p.f2 * t + p.ph2);
-      a += amp * 0.012 * Math.sin(om * p.f3 * t + p.ph3);
-    }
-    // Teilchen am Rand des periodischen Ausschnitts doppelt zeichnen
-    const xs = [x], ys = [y];
-    if (sim.wrapX || p.mode === 'solid') {
-      if (x < margin) xs.push(x + sim.Lx);
-      if (x > sim.Lx - margin) xs.push(x - sim.Lx);
-    }
-    if (sim.wrapY || p.mode === 'solid') {
-      if (y < margin) ys.push(y + sim.Ly);
-      if (y > sim.Ly - margin) ys.push(y - sim.Ly);
-    }
-    for (const xx of xs) for (const yy of ys) drawTriangle(c, xx, yy, a, s);
-  }
-  c.restore();
-
-  c.beginPath();
-  c.arc(lupe.x, lupe.y, lupe.r, 0, TAU);
-  c.strokeStyle = COLORS.ink;
-  c.lineWidth = 3;
-  c.stroke();
 }
 
-function drawLabels() {
-  const c = ctx, L = layout.labels;
-  c.font = '600 17px system-ui, -apple-system, sans-serif';
+function drawLabel(c, text, x, y, size = 17) {
+  c.font = `600 ${size}px system-ui, -apple-system, sans-serif`;
   c.fillStyle = COLORS.label;
   c.textAlign = 'center';
   c.textBaseline = 'middle';
-  c.fillText('Teilchenebene', L.lx, L.y);
-  c.fillText('Stoffebene', L.bx, L.by || L.y);
-}
-
-function draw() {
-  ctx.clearRect(0, 0, W, H);
-  const phase = sim.phase;
-  drawLabels();
-  drawBeaker(phase);
-  drawLupe(phase);
+  c.fillText(text, x, y);
 }
 
 /* ════════════════════════════════════════════════════════════════
-   Ablauf
+   Teil 1: die drei Aggregatzustände nebeneinander
    ════════════════════════════════════════════════════════════════ */
-let last = performance.now();
-function frame(now) {
-  const real = Math.min(0.05, (now - last) / 1000);
-  last = now;
-  if (!paused) {
-    const dt = real * (slow ? CFG.slowFactor : 1);
-    const sub = 3;
-    for (let i = 0; i < sub; i++) step(dt / sub);
-    stepMacro(dt, sim.phase);
-  }
-  sim.fade = Math.min(1, sim.fade + real / 0.3);
-  draw();
-  requestAnimationFrame(frame);
+const part1 = {
+  panels: STATES.map(st => ({ ...st, sim: new Sim(st.temp), macro: new Macro() })),
+  layout: null,
+
+  computeLayout() {
+    const colW = W / 3;
+    const labelH = 40;
+    const gap = 30;
+    const R = Math.max(30, Math.min(colW * 0.44, (H - labelH) * 0.28));
+    // Becherglas ohne Thermometer: lokal x −15…210, y −40…285
+    const bw = 225, bh = 325;
+    const k = Math.max(0.2, Math.min((H - labelH - 2 * R - gap - 8) / bh, (colW * 0.62) / bw));
+    // Lupe und Becherglas zusammen senkrecht mittig anordnen
+    const used = labelH + 2 * R + gap + bh * k;
+    const y0 = Math.max(0, (H - 8 - used) / 2);
+    return this.panels.map((p, i) => {
+      const cx = colW * (i + 0.5);
+      return {
+        label: { x: cx, y: y0 + 20 },
+        lupe: { x: cx, y: y0 + labelH + R, r: R },
+        beaker: { x: cx - (-15 + bw / 2) * k, y: y0 + labelH + 2 * R + gap + 40 * k, k },
+      };
+    });
+  },
+
+  step(dt) {
+    for (const p of this.panels) {
+      p.sim.step(dt);
+      p.macro.step(dt, p.sim.phase);
+    }
+  },
+
+  draw(c) {
+    this.panels.forEach((p, i) => {
+      const L = this.layout[i];
+      const phase = p.sim.phase;
+      drawLabel(c, p.label, L.label.x, L.label.y, 20);
+      drawBeaker(c, L.beaker.x, L.beaker.y, L.beaker.k, phase, p.macro, null, false);
+      const fp = focusPoint(phase);
+      drawConnector(c, { x: L.beaker.x + fp.x * L.beaker.k, y: L.beaker.y + fp.y * L.beaker.k }, L.lupe);
+      p.sim.draw(c, L.lupe.x, L.lupe.y, L.lupe.r);
+    });
+  },
+
+  rebuild() { this.panels.forEach(p => p.sim.rebuild()); },
+};
+
+/* ════════════════════════════════════════════════════════════════
+   Teil 2: Temperatur einstellen
+   ════════════════════════════════════════════════════════════════ */
+const part2 = {
+  T: -10,
+  lupeAbove: false,
+  sim: new Sim(-10),
+  macro: new Macro(),
+  layout: null,
+
+  computeLayout() {
+    // Becherglas mit Thermometer: lokal x −40…230, y −200…290
+    const left = -40, bw = 270, top = -200, bottom = 290, bh = bottom - top;
+    const labelH = 34;
+    if (W >= H * 1.15) {
+      // Querformat: Becherglas links, Lupe rechts
+      const R = Math.min((H - labelH - 16) / 2, W * 0.25);
+      const lupe = { x: W * 0.69, y: labelH + (H - labelH) / 2, r: R };
+      const k = Math.min((H - labelH - 10) / bh, (W * 0.38) / bw);
+      return {
+        lupe,
+        beaker: { x: W * 0.24 - (left + bw / 2) * k, y: H - 8 - bottom * k, k },
+        labels: { bx: W * 0.24, by: 22, lx: lupe.x, ly: 22 },
+      };
+    }
+    // Hochformat: Lupe oben rechts, Becherglas unten links
+    const R = Math.min(W * 0.38, (H - labelH) * 0.27);
+    const lupe = { x: W - 16 - R, y: labelH + R + 4, r: R };
+    const btop = lupe.y + R + 10;
+    const k = Math.min((H - btop - 8) / bh, (W * 0.55) / bw);
+    return {
+      lupe,
+      beaker: { x: W * 0.28 - (left + bw / 2) * k, y: H - 8 - bottom * k, k },
+      labels: { bx: W * 0.28, by: btop + 4, lx: lupe.x, ly: 22 },
+    };
+  },
+
+  step(dt) {
+    this.sim.step(dt);
+    this.macro.step(dt, this.sim.phase);
+  },
+
+  draw(c) {
+    const L = this.layout, phase = this.sim.phase;
+    drawLabel(c, 'Teilchenebene', L.labels.lx, L.labels.ly);
+    drawLabel(c, 'Stoffebene', L.labels.bx, L.labels.by);
+    drawBeaker(c, L.beaker.x, L.beaker.y, L.beaker.k, phase, this.macro, this.T, phase === 'boilAbove');
+    const fp = focusPoint(phase);
+    drawConnector(c, { x: L.beaker.x + fp.x * L.beaker.k, y: L.beaker.y + fp.y * L.beaker.k }, L.lupe);
+    this.sim.draw(c, L.lupe.x, L.lupe.y, L.lupe.r);
+  },
+
+  rebuild() { this.sim.rebuild(); },
+};
+
+/* ════════════════════════════════════════════════════════════════
+   Bedienung
+   ════════════════════════════════════════════════════════════════ */
+const ui = {
+  tab1:   document.getElementById('tab1'),
+  tab2:   document.getElementById('tab2'),
+  temp:   document.getElementById('temp'),
+  tempRow: document.getElementById('tempRow'),
+  out:    document.getElementById('readout'),
+  minus:  document.getElementById('minus'),
+  plus:   document.getElementById('plus'),
+  pause:  document.getElementById('pause'),
+  slow:   document.getElementById('slow'),
+  lupeSwitch: document.getElementById('lupeSwitch'),
+  lupeIn:     document.getElementById('lupeIn'),
+  lupeAbove:  document.getElementById('lupeAbove'),
+};
+
+let paused = false;
+let slow = false;
+let current = part1;
+
+function showPart(n) {
+  current = n === 2 ? part2 : part1;
+  ui.tab1.setAttribute('aria-selected', n === 1);
+  ui.tab2.setAttribute('aria-selected', n === 2);
+  ui.tempRow.hidden = n !== 2;
+  ui.lupeSwitch.hidden = n !== 2 || part2.T !== 100;
+  const hash = n === 2 ? '#temperatur' : '#zustaende';
+  if (location.hash !== hash) history.replaceState(null, '', hash);
+  resize();
 }
 
+function setTemp(t) {
+  part2.T = Math.max(-20, Math.min(120, t));
+  ui.temp.value = part2.T;
+  ui.out.textContent = fmt(part2.T);
+  ui.lupeSwitch.hidden = part2.T !== 100;
+  part2.sim.setTemp(part2.T, part2.lupeAbove);
+}
+
+function setLupe(above) {
+  part2.lupeAbove = above;
+  ui.lupeIn.setAttribute('aria-pressed', !above);
+  ui.lupeAbove.setAttribute('aria-pressed', above);
+  part2.sim.setTemp(part2.T, above);
+}
+
+ui.tab1.addEventListener('click', () => showPart(1));
+ui.tab2.addEventListener('click', () => showPart(2));
 ui.temp.addEventListener('input', () => setTemp(Number(ui.temp.value)));
-ui.minus.addEventListener('click', () => setTemp(T - 1));
-ui.plus.addEventListener('click', () => setTemp(T + 1));
+ui.minus.addEventListener('click', () => setTemp(part2.T - 1));
+ui.plus.addEventListener('click', () => setTemp(part2.T + 1));
+ui.lupeIn.addEventListener('click', () => setLupe(false));
+ui.lupeAbove.addEventListener('click', () => setLupe(true));
 
 ui.pause.addEventListener('click', () => {
   paused = !paused;
@@ -1030,33 +1133,55 @@ ui.slow.addEventListener('click', () => {
   ui.slow.setAttribute('aria-pressed', slow);
 });
 
-function setLupe(above) {
-  lupeAbove = above;
-  ui.lupeIn.setAttribute('aria-pressed', !above);
-  ui.lupeAbove.setAttribute('aria-pressed', above);
-  syncPhase();
-}
-ui.lupeIn.addEventListener('click', () => setLupe(false));
-ui.lupeAbove.addEventListener('click', () => setLupe(true));
-
+window.addEventListener('hashchange', () => showPart(location.hash === '#temperatur' ? 2 : 1));
 window.addEventListener('resize', resize);
+
+/* ════════════════════════════════════════════════════════════════
+   Ablauf
+   ════════════════════════════════════════════════════════════════ */
+function resize() {
+  const r = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  W = r.width; H = r.height;
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  part1.layout = part1.computeLayout();
+  part2.layout = part2.computeLayout();
+}
+
+let last = performance.now();
+function frame(now) {
+  // Der erste Zeitstempel kann vor dem Start liegen: Zeitspanne nie negativ
+  const real = Math.min(0.05, Math.max(0, (now - last) / 1000));
+  last = now;
+  if (!paused) {
+    const dt = real * (slow ? CFG.slowFactor : 1);
+    const sub = 3;
+    for (let i = 0; i < sub; i++) current.step(dt / sub);
+  }
+  for (const s of [...part1.panels.map(p => p.sim), part2.sim]) s.fade = Math.min(1, s.fade + real / 0.3);
+  ctx.clearRect(0, 0, W, H);
+  current.draw(ctx);
+  requestAnimationFrame(frame);
+}
 
 /* ════════════════════════════════════════════════════════════════
    Lehrermodus: Feineinstellung der Teilchenbewegung
    ════════════════════════════════════════════════════════════════ */
 const TEACHER_FIELDS = [
-  ['size',        'Teilchengröße',                   30, 90, 1],
-  ['spacing',     'Abstand im Gitter',               0.85, 1.6, 0.05],
-  ['ampCold',     'Schwingung bei −20 °C',           0, 10, 0.5],
-  ['ampMelt',     'Schwingung kurz vor 0 °C',        0, 15, 0.5],
-  ['vibFreq',     'Schwingungen pro Sekunde',        1, 10, 0.5],
-  ['liqSpeed0',   'Tempo flüssig bei 0 °C',          5, 200, 5],
-  ['liqSpeed100', 'Tempo flüssig bei 100 °C',        10, 400, 5],
-  ['gasSpeed100', 'Tempo gasförmig bei 100 °C',      50, 600, 10],
-  ['gasSpeed120', 'Tempo gasförmig bei 120 °C',      50, 700, 10],
+  ['size',        'Teilchengröße',                    30, 90, 1],
+  ['spacing',     'Abstand im Gitter',                0.85, 1.6, 0.05],
+  ['ampCold',     'Schwingung bei −20 °C',            0, 10, 0.5],
+  ['ampMelt',     'Schwingung kurz vor 0 °C',         0, 15, 0.5],
+  ['vibFreq',     'Schwingungen pro Sekunde',         1, 10, 0.5],
+  ['liqSpeed0',   'Tempo flüssig bei 0 °C',           5, 200, 5],
+  ['liqSpeed100', 'Tempo flüssig bei 100 °C',         10, 400, 5],
+  ['gasSpeed100', 'Tempo gasförmig bei 100 °C',       50, 600, 10],
+  ['gasSpeed120', 'Tempo gasförmig bei 120 °C',       50, 700, 10],
   ['gasCount',    'Teilchen in der Lupe (gasförmig)', 1, 12, 1],
-  ['escapeEvery', 'Sieden: Sekunden pro Teilchen',   0.2, 5, 0.1],
-  ['slowFactor',  'Tempo in Zeitlupe',               0.05, 0.75, 0.05],
+  ['escapeEvery', 'Sieden: Sekunden pro Teilchen',    0.2, 5, 0.1],
+  ['slowFactor',  'Tempo in Zeitlupe',                0.05, 0.75, 0.05],
 ];
 
 function setupTeacher() {
@@ -1073,7 +1198,7 @@ function setupTeacher() {
     input.addEventListener('input', () => {
       CFG[key] = Number(input.value);
       out.textContent = input.value;
-      if (rebuild.has(key)) { buildLattice(); initView(sim.view, phaseOf(T)); }
+      if (rebuild.has(key)) { part1.rebuild(); part2.rebuild(); }
     });
     box.appendChild(l);
   }
@@ -1092,9 +1217,8 @@ function setupTeacher() {
 
 if (new URLSearchParams(location.search).has('lehrer')) setupTeacher();
 
-buildLattice();
-resize();
-setTemp(T);
+setTemp(part2.T);
+showPart(location.hash === '#temperatur' ? 2 : 1);
 requestAnimationFrame(frame);
 </script>
 </body>
