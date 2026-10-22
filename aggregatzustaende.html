@@ -245,9 +245,9 @@
 const CFG = {
   size:        56,    // Seitenlänge eines Teilchens (Lupe hat Radius 200)
   spacing:     1.0,   // Abstand im Gitter (Vielfaches der Teilchengröße)
-  ampCold:     1.5,   // Schwingungsweite bei −20 °C
-  ampMelt:     4.0,   // Schwingungsweite kurz vor 0 °C
-  vibFreq:     4.0,   // Schwingungen pro Sekunde
+  ampCold:     1.0,   // Schwingungsweite bei −20 °C
+  ampMelt:     2.5,   // Schwingungsweite kurz vor 0 °C
+  vibFreq:     2.5,   // Schwingungen pro Sekunde
   liqSpeed0:   40,    // Geschwindigkeit flüssig bei 0 °C
   liqSpeed100: 130,   // Geschwindigkeit flüssig bei 100 °C
   gasSpeed100: 260,   // Geschwindigkeit gasförmig bei 100 °C
@@ -956,7 +956,7 @@ function drawLupe(phase) {
     if (p.mode === 'solid') {
       x += amp * Math.sin(om * p.f1 * t + p.ph1);
       y += amp * Math.sin(om * p.f2 * t + p.ph2);
-      a += amp * 0.02 * Math.sin(om * p.f3 * t + p.ph3);
+      a += amp * 0.012 * Math.sin(om * p.f3 * t + p.ph3);
     }
     // Teilchen am Rand des periodischen Ausschnitts doppelt zeichnen
     const xs = [x], ys = [y];
