@@ -28,17 +28,19 @@ k und P(X = k) mit vier Nachkommastellen. Der höchste Balken ist hier bewusst *
 hervorgehoben, weil Auftrag 2 danach fragt.
 
 **Teil 2 – n und p verändern:**
-- n von 1 bis 50 (Regler und −/+), p von 0 bis 1 in Schritten von 0,01.
-- Der höchste Balken ist orange. Bei gleich hohen Balken (z. B. n = 3, p = 0,5) sind beide orange.
-- „Hochachse festhalten“ ist beim Start an, die Hochachse reicht dann bis 1. So sieht man,
-  dass das Histogramm mit wachsendem n flacher wird. Ausgeschaltet passt sich die Hochachse an,
-  und die Form ist besser zu erkennen.
+- n von 10 bis 50 (Regler und −/+), p von 0 bis 1 in Schritten von 0,01. Start: n = 10, p = 0,5.
+- Der höchste Balken ist orange. Bei gleich hohen Balken sind beide orange.
+- „Hochachse festhalten“ ist beim Start an, die Hochachse reicht dann bis 0,3. So sieht man,
+  dass das Histogramm mit wachsendem n flacher wird. Ab n = 10 bleiben alle Balken unter 0,3,
+  solange 0,22 ≤ p ≤ 0,78 gilt. Höhere Balken (z. B. n = 10, p = 0,1, und die Extremfälle p = 0, p = 1)
+  werden oben gekappt: weiße Bruchkante und Pfeil nach oben, der Wert ist per Antippen lesbar.
+  Ausgeschaltet passt sich die Hochachse an, und die Form ist besser zu erkennen.
 - „Vergleichsbild merken“ lässt das aktuelle Histogramm gestrichelt stehen.
   Die Rechtsachse reicht dann bis zum größeren der beiden n.
 - Antippen eines Balkens zeigt wie in Teil 1 k und P(X = k); der Balken bekommt einen Rahmen.
 - Kein Erwartungswert, keine Standardabweichung (noch nicht eingeführt).
 
-**Lehrermodus (`?lehrer`):** n und p für Teil 1, größtes n am Regler (bis 100),
+**Lehrermodus (`?lehrer`):** n und p für Teil 1, kleinstes und größtes n am Regler (bis 100),
 Obergrenze der festen Hochachse, „Werte kopieren“ (Tabelle k, P(X = k) des angezeigten Histogramms).
 
 **Didaktische Reduktion:** Die Balken haben die Breite 1 (von k − 0,5 bis k + 0,5).

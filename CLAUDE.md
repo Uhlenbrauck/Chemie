@@ -14,6 +14,10 @@ Aufbau des Repos: siehe `README.md`.
   ansehen (ffmpeg). Ehrlich sagen, was man davon beurteilen kann und was nicht.
 - Die Arbeitsblätter überarbeitet Kai selbst. Claude liefert Texte und Aufgaben zum Einfügen,
   Rückmeldungen und Durchsichten.
+- Aufgaben zu einem Tool stehen entweder auf dem Arbeitsblatt **oder** auf einer Erarbeitungsseite
+  im Repo (`<thema>-erarbeitung.html`, Aufgaben neben dem eingebetteten Tool mit `?eingebettet`).
+  Die Erarbeitungsseite bietet sich an, wenn die S direkt mit Diagrammen oder Simulationen arbeiten.
+  Vorbild: `mathe/q2/binomialverteilung-erarbeitung.html`.
 - Aufgaben mit NRW-Operatoren formulieren (nenne, beschreibe, vergleiche, erkläre, erläutere …).
 - Fachliche Aussagen prüfen. Didaktische Reduktionen ausdrücklich benennen.
 
@@ -38,7 +42,8 @@ Aufbau des Repos: siehe `README.md`.
 - Zielgerät: **iPad, Bedienung durch die Schüler:innen selbst**, Safari, quer und hochkant.
   Große Bedienelemente (mind. 44 px), keine Hover-Funktionen.
 - **Nicht überfrachten:** nur die Bedienelemente, die der Arbeitsauftrag braucht.
-- **Keine Lösungstexte in der Animation.** Erklärungen und Aufgaben stehen auf dem Arbeitsblatt.
+- **Keine Lösungstexte in der Animation.** Erklärungen und Aufgaben stehen auf dem Arbeitsblatt
+  oder auf der Erarbeitungsseite, nie im Tool selbst.
   Auf dem Bildschirm nur neutrale Beschriftungen (z. B. „Stoffebene“, „Teilchenebene“, „fest“).
 - Mehrere Teile einer Animation über Reiter, jeder Teil direkt verlinkbar über einen Hash-Anker
   (z. B. `#zustaende`), damit das AB pro Aufgabe einen eigenen QR-Code haben kann.
