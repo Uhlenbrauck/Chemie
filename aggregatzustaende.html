@@ -166,6 +166,8 @@
     cursor: pointer;
   }
 
+  .btn:disabled { cursor: default; }
+
   .btn[aria-pressed=true], .btn[aria-selected=true] {
     background: var(--accent);
     border-color: var(--accent);
@@ -249,7 +251,7 @@
 
   <div class="row" id="tempRow" hidden>
     <button class="step" id="minus" aria-label="Temperatur um 1 °C verringern">−</button>
-    <input type="range" id="temp" min="-20" max="120" step="1" value="-10" aria-label="Temperatur">
+    <input type="range" id="temp" min="-20" max="100" step="1" value="-10" aria-label="Temperatur">
     <button class="step" id="plus" aria-label="Temperatur um 1 °C erhöhen">+</button>
     <output class="readout" id="readout" for="temp">−10 °C</output>
   </div>
@@ -703,13 +705,31 @@ class Sim {
    ════════════════════════════════════════════════════════════════ */
 const BEAKER = { w: 200, h: 280, water: 126 };
 
-const ICE_PILE = [
-  { x: 42,  y: 244, r: -0.08 }, { x: 102, y: 246, r: 0.05 }, { x: 160, y: 243, r: -0.04 },
-  { x: 70,  y: 186, r: 0.12 },  { x: 132, y: 184, r: -0.1 },
-  { x: 100, y: 128, r: 0.06 },
-];
+// Eiswürfel vom Boden aus gestapelt; f = Anteil des noch vorhandenen Eises.
+// Beim Schmelzen werden die Würfel kleiner, der Stapel bleibt aufeinander liegen.
+function icePile(f = 1) {
+  const size = 46 * (0.4 + 0.6 * f);
+  const inner = 194, bottom = 277;
+  const cubes = [];
+  for (let row = 0; row < 4; row++) {
+    const n = row % 2 ? 3 : 4;
+    const gap = (inner - n * size) / (n + 1);
+    for (let i = 0; i < n; i++) {
+      const j = row * 7 + i;   // feste Pseudozufallswerte, damit nichts flackert
+      cubes.push({
+        x: 3 + gap + size / 2 + i * (size + gap) + Math.sin(j * 12.9) * 3,
+        y: bottom - size / 2 - row * size * 0.94,
+        r: Math.sin(j * 7.3) * 0.12,
+        s: size,
+      });
+    }
+  }
+  return cubes;
+}
+
+const ICE_PILE = icePile(1);
 const ICE_FLOAT = [
-  { x: 52, y: 146, r: 0.1 }, { x: 116, y: 150, r: -0.06 },
+  { x: 52, y: 146, r: 0.1, s: 54 }, { x: 116, y: 150, r: -0.06, s: 54 },
 ];
 
 // Blasen und Dampf im Becherglas
@@ -842,12 +862,11 @@ function innerClip(c) {
   c.closePath();
 }
 
-function drawIce(c, cube, scale = 1) {
+function drawIce(c, cube) {
   c.save();
-  // beim Schmelzen schrumpfen die Würfel und bleiben dabei auf ihrer Unterlage
-  c.translate(cube.x, cube.y + 27 * (1 - scale));
+  c.translate(cube.x, cube.y);
   c.rotate(cube.r);
-  c.scale(scale, scale);
+  c.scale(cube.s / 54, cube.s / 54);
   roundRect(c, -27, -27, 54, 54, 7);
   c.fillStyle = COLORS.ice;
   c.fill();
@@ -864,7 +883,7 @@ function drawIce(c, cube, scale = 1) {
 }
 
 // Becherglas an Position (x, y) mit Maßstab k; temp = null → ohne Thermometer
-// opts: waterY (Wasserstand), ice (Eiswürfel), iceScale, hotplate (an/aus)
+// opts: waterY (Wasserstand), ice (Eiswürfel), hotplate (an/aus)
 function drawBeaker(c, x, y, k, phase, macro, temp, raised, opts = {}) {
   c.save();
   c.translate(x, y);
@@ -888,7 +907,7 @@ function drawBeaker(c, x, y, k, phase, macro, temp, raised, opts = {}) {
     : phase === 'melt' || phase === 'liquid' || boiling;
 
   const ice = opts.ice ?? (phase === 'solid' ? ICE_PILE : phase === 'melt' ? ICE_FLOAT : []);
-  ice.forEach(cube => drawIce(c, cube, opts.iceScale ?? 1));
+  ice.forEach(cube => drawIce(c, cube));
 
   if (hasWater) {
     c.beginPath();
@@ -1134,6 +1153,7 @@ const HEAT = {
   melt:       60,    // Schmelzen (didaktisch verkürzt, real etwa 80)
   vaporize:   540,   // Verdampfen des ganzen Wassers (Verhältnis wie in echt)
   minPerSec:  0.1,   // angezeigte Minuten pro Sekunde Ablauf
+  fastLiquid: 4,     // Zeitraffer beim Erwärmen des Wassers (0 bis 100 °C)
   sampleMin:  0.5,   // Messpunkt alle 30 s wie in V4
 };
 
@@ -1141,6 +1161,7 @@ const part3 = {
   E: 0,
   time: 0,
   heating: false,
+  finished: false,
   lupeAbove: false,
   points: [],
   sim: new Sim(HEAT.start),
@@ -1152,6 +1173,7 @@ const part3 = {
     this.E = 0;
     this.time = 0;
     this.points = [{ t: 0, T: HEAT.start }];
+    this.finished = false;
     this.setHeating(false);
     this.state = this.compute();
     this.sim.setState(this.state.T, this.state.phase);
@@ -1169,16 +1191,22 @@ const part3 = {
     return { T: 100, phase: boil, ice: 0, water, done: water <= 0.02 };
   },
 
+  // Die Heizplatte wird nur eingeschaltet; ein Abkühlen ist nicht vorgesehen
   setHeating(on) {
     this.heating = on;
     ui.heat.setAttribute('aria-pressed', on);
-    ui.heat.textContent = on ? 'Heizplatte ausschalten' : 'Heizplatte einschalten';
+    ui.heat.disabled = on || this.finished;
+    ui.heat.textContent = this.finished ? 'Versuch beendet'
+      : on ? 'Heizplatte ist an' : 'Heizplatte einschalten';
   },
+
+  fast() { return this.heating && this.state && this.state.phase === 'liquid'; },
 
   step(dt) {
     if (this.heating) {
-      this.E += HEAT.power * dt;
-      this.time += dt;
+      const f = this.fast() ? HEAT.fastLiquid : 1;
+      this.E += HEAT.power * dt * f;
+      this.time += dt * f;
       const tMin = this.time * HEAT.minPerSec;
       const last = this.points[this.points.length - 1];
       if (tMin - last.t >= HEAT.sampleMin - 1e-9) {
@@ -1186,7 +1214,7 @@ const part3 = {
       }
     }
     const st = this.state = this.compute();
-    if (st.done && this.heating) this.setHeating(false);   // fast alles verdampft
+    if (st.done && this.heating) { this.finished = true; this.setHeating(false); }   // fast alles verdampft
     if (st.phase === 'melt' && this.sim.phase !== 'melt') this.sim.meltFrac = st.ice;
     this.sim.setState(st.T, st.phase);
     this.sim.setMeltFrac(st.ice);
@@ -1225,14 +1253,20 @@ const part3 = {
     drawBeaker(c, L.beaker.x, L.beaker.y, L.beaker.k, phase, this.macro, Math.round(st.T),
       phase === 'boilAbove', {
         waterY: wy,
-        ice: st.ice > 0 ? ICE_PILE : [],
-        iceScale: 0.35 + 0.65 * st.ice,
+        ice: st.ice > 0 ? icePile(st.ice) : [],
         hotplate: this.heating,
       });
     const fp = focusPoint(phase, wy);
     drawConnector(c, { x: L.beaker.x + fp.x * L.beaker.k, y: L.beaker.y + fp.y * L.beaker.k }, L.lupe);
     this.sim.draw(c, L.lupe.x, L.lupe.y, L.lupe.r);
     drawChart(c, L.chart, this.points, { t: this.time * HEAT.minPerSec, T: st.T });
+    if (this.fast()) {
+      c.font = '600 15px system-ui, -apple-system, sans-serif';
+      c.fillStyle = COLORS.thermoRed;
+      c.textAlign = 'right';
+      c.textBaseline = 'top';
+      c.fillText(`Zeitraffer ×${HEAT.fastLiquid}`, L.chart.x + L.chart.w - 8, L.chart.y + 6);
+    }
   },
 
   rebuild() { this.sim.rebuild(); },
@@ -1360,7 +1394,7 @@ function syncLupeButtons() {
 }
 
 function setTemp(t) {
-  part2.T = Math.max(-20, Math.min(120, t));
+  part2.T = Math.max(-20, Math.min(100, t));
   ui.temp.value = part2.T;
   ui.out.textContent = fmt(part2.T);
   part2.sim.setTemp(part2.T, part2.lupeAbove);
@@ -1385,10 +1419,7 @@ function fmtClock(min) {
 ui.tab1.addEventListener('click', () => showPart(1));
 ui.tab2.addEventListener('click', () => showPart(2));
 ui.tab3.addEventListener('click', () => showPart(3));
-ui.heat.addEventListener('click', () => {
-  if (part3.state.done) return;
-  part3.setHeating(!part3.heating);
-});
+ui.heat.addEventListener('click', () => part3.setHeating(true));
 ui.reset.addEventListener('click', () => { part3.lupeAbove = false; part3.reset(); syncLupeButtons(); });
 ui.temp.addEventListener('input', () => setTemp(Number(ui.temp.value)));
 ui.minus.addEventListener('click', () => setTemp(part2.T - 1));
