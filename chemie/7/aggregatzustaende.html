@@ -1154,12 +1154,14 @@ const part2 = {
    Energie in willkürlichen Einheiten; 1 Einheit erwärmt um 1 °C.
    ════════════════════════════════════════════════════════════════ */
 const HEAT = {
-  start:      -10,   // Anfangstemperatur des Eises
+  start:      -20,   // Anfangstemperatur des Eises (wie aus dem Gefrierschrank)
   power:      2,     // zugeführte Energie pro Sekunde
   melt:       60,    // Schmelzen (didaktisch verkürzt, real etwa 80)
   vaporize:   540,   // Verdampfen des ganzen Wassers (Verhältnis wie in echt)
   minPerSec:  0.1,   // angezeigte Minuten pro Sekunde Ablauf
   fastLiquid: 4,     // Zeitraffer beim Erwärmen des Wassers (0 bis 100 °C)
+  solidPower: 0.67,  // Eis wird langsamer erwärmt (didaktisch), damit man sieht,
+                     // wie die Schwingung zunimmt: etwa 15 s bzw. 1,5 min Versuchszeit
   sampleMin:  0.5,   // Messpunkt alle 30 s wie in V4
 };
 
@@ -1211,7 +1213,8 @@ const part3 = {
   step(dt) {
     if (this.heating) {
       const f = this.fast() ? HEAT.fastLiquid : 1;
-      this.E += HEAT.power * dt * f;
+      const p = this.state && this.state.phase === 'solid' ? HEAT.solidPower : 1;
+      this.E += HEAT.power * p * dt * f;
       this.time += dt * f;
       const tMin = this.time * HEAT.minPerSec;
       const last = this.points[this.points.length - 1];
