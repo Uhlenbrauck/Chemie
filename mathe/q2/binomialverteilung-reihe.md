@@ -9,11 +9,13 @@ Absprachen zur Reihe und zum Tool `binomialverteilung.html`.
 | 1 | **AB 34** | Galtonbrett (PhET-Simulation), Wege und Wahrscheinlichkeiten für die Eimer bei p = 1/2 | – |
 | 2 | **AB 35** | „Schiefes“ Galtonbrett, Term für P(E_k) bei P(rechts) = p | – |
 | 3 | **AB 36** | Bernoulli-Experiment, Bernoulli-Kette, Zufallsgröße X, Definition der Binomialverteilung, GTR (binomPdf, binomCdf) | – |
-| 4 | AB zum Tool | Histogramme lesen, danach Abhängigkeit von n und p untersuchen | Teil 1 `#lesen`, Teil 2 `#erkunden` |
+| 4 | Erarbeitungsseite (statt AB) | Histogramme lesen, danach Abhängigkeit von n und p untersuchen | Teil 1 `#lesen`, Teil 2 `#erkunden` |
 | 5 | **AB 37** | Übungen aus dem Buch | – |
 
 ## Links
 
+- Erarbeitungsseite: https://uhlenbrauck.github.io/unterricht/mathe/q2/binomialverteilung-erarbeitung.html
+  (Sprungziele `#aufgabe1`, `#aufgabe2`)
 - Teil 1: https://uhlenbrauck.github.io/unterricht/mathe/q2/binomialverteilung.html#lesen
 - Teil 2: https://uhlenbrauck.github.io/unterricht/mathe/q2/binomialverteilung.html#erkunden
 - Lehrermodus: `…/binomialverteilung.html?lehrer#erkunden`
@@ -43,38 +45,10 @@ Obergrenze der festen Hochachse, „Werte kopieren“ (Tabelle k, P(X = k) des a
 Deshalb ist ihr Flächeninhalt gleich ihrer Höhe, und die Wahrscheinlichkeit lässt sich an der
 Höhe ablesen. Im Tool sind die Balken zur besseren Lesbarkeit etwas schmaler gezeichnet.
 
-## Arbeitsaufträge (zum Einfügen ins AB)
+## Arbeitsaufträge
 
-**Aufgabe 1 | Was zeigt ein Histogramm?** (Teil 1)
-
-Das Tool zeigt die Binomialverteilung aus AB 36 als **Histogramm**. Tippe auf die Balken.
-
-a) Beschreibe, was auf der Rechtsachse und was auf der Hochachse abgetragen ist und was ein einzelner Balken darstellt.
-
-b) Gib an, welchen Wert die Zufallsgröße X am wahrscheinlichsten annimmt. Vergleiche mit deiner GTR-Tabelle aus AB 36.
-
-c) Bestimme P(X ≤ 2) mithilfe des Histogramms. Erläutere, wie man diese Wahrscheinlichkeit im Histogramm „sieht“.
-
-d) Begründe, warum die Höhen aller Balken zusammen 1 ergeben.
-
-e) Deute das Histogramm am Galtonbrett: Was bedeuten n, p und k, was bedeutet die Höhe eines Balkens?
-
-**Aufgabe 2 | Wie hängt die Gestalt des Histogramms von n und p ab?** (Teil 2)
-
-Mit „Vergleichsbild merken“ bleibt ein Histogramm gestrichelt stehen, sodass du zwei Einstellungen vergleichen kannst.
-
-a) Stelle n = 10 ein und verändere p. Beschreibe, wie sich die Lage des höchsten Balkens verändert.
-
-b) Vergleiche die Histogramme für p = 0,3 und p = 0,7 (n = 10). Erkläre deine Beobachtung mithilfe von Erfolg und Misserfolg.
-
-c) Nenne die Besonderheit des Histogramms für p = 0,5 und begründe sie am Galtonbrett.
-
-d) Stelle p = 0,3 ein und erhöhe n schrittweise von 5 bis 50. Beschreibe, wie sich Lage, Breite und Höhe des Histogramms verändern.
-
-e) Erkläre, warum das Histogramm mit wachsendem n flacher werden muss. *Tipp: Aufgabe 1 d).*
-
-f) Stelle eine Vermutung auf, bei welchem k der höchste Balken in Abhängigkeit von n und p liegt. Überprüfe deine Vermutung an drei selbst gewählten Beispielen.
-
-g) *Für Schnelle:* Untersuche die Extremfälle p = 0 und p = 1. Erläutere die Histogramme.
+Stehen auf der Erarbeitungsseite `binomialverteilung-erarbeitung.html` (Aufgabe 1 zu Teil 1, Aufgabe 2 zu Teil 2).
+Das Tool ist dort bei jeder Aufgabe eingebettet (`binomialverteilung.html?eingebettet#…`, ohne Titel und Reiter).
+Breiter Bildschirm (iPad quer): Aufgaben links, Tool rechts und mitlaufend. Schmal (hochkant): Tool oben, Aufgaben darunter.
 
 Lösungen gehören nicht ins Repo.

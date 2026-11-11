@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Binomialverteilung – Histogramme untersuchen</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #f7f6f2;
+    --surface: #ffffff;
+    --border:  #d9d6cc;
+    --text:    #1a1a18;
+    --muted:   #6b6960;
+    --accent:  #2d5a3d;
+    --accent-lt: #e8f0eb;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  i, .m { font-family: "Times New Roman", Times, serif; font-style: italic; font-size: 1.1em; }
+
+  header {
+    background: var(--accent);
+    color: #fff;
+    padding: 18px 20px 16px;
+  }
+
+  header .eyebrow { font-size: 13px; opacity: .8; }
+  header h1 { font-size: clamp(22px, 3.2vw, 30px); font-weight: 600; line-height: 1.25; }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    gap: 8px;
+    padding: 8px 20px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  nav a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 18px;
+    border-radius: 22px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 16px;
+  }
+
+  main { max-width: 1400px; margin: 0 auto; padding: 16px 20px 60px; }
+
+  section { margin-bottom: 40px; scroll-margin-top: 70px; }
+
+  /* Breit: Aufgaben links, Tool rechts und mitlaufend. Schmal: Tool oben, Aufgaben darunter. */
+  .work {
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(0, 1.55fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .tasks { grid-column: 1; grid-row: 1; }
+  .tool  { grid-column: 2; grid-row: 1; position: sticky; top: 70px; }
+
+  @media (max-width: 960px) {
+    .work { display: flex; flex-direction: column; gap: 14px; }
+    .tool { position: static; width: 100%; }
+    .tasks { width: 100%; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+
+  h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  h2 .nr { color: var(--accent); }
+
+  .intro { margin-bottom: 12px; }
+
+  ol.items { list-style: none; counter-reset: item; }
+  ol.items > li {
+    counter-increment: item;
+    position: relative;
+    padding: 10px 0 10px 34px;
+    border-top: 1px solid var(--border);
+  }
+  ol.items > li::before {
+    content: counter(item, lower-alpha) ")";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  ol.items > li.extra::after {
+    content: "für Schnelle";
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 12px;
+    padding: 1px 8px;
+    border-radius: 10px;
+    background: var(--accent-lt);
+    color: var(--accent);
+    vertical-align: 1px;
+  }
+
+  .op { font-weight: 700; }
+  .tipp { color: var(--muted); font-style: italic; }
+
+  .note {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--accent-lt);
+    border-radius: 8px;
+    font-size: 15px;
+  }
+
+  .frame {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  iframe { display: block; width: 100%; border: 0; }
+  #t1 iframe { height: clamp(380px, 62vh, 620px); }
+  #t2 iframe { height: clamp(520px, calc(100vh - 110px), 900px); }
+
+  .open {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 14px;
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Mathematik GK Q2 · Stochastik</div>
+  <h1>Histogramme der Binomialverteilung</h1>
+</header>
+
+<nav aria-label="Aufgaben">
+  <a href="#aufgabe1">Aufgabe 1</a>
+  <a href="#aufgabe2">Aufgabe 2</a>
+</nav>
+
+<main>
+
+  <section id="aufgabe1">
+    <div class="work">
+      <div class="tool" id="t1">
+        <div class="frame">
+          <iframe src="binomialverteilung.html?eingebettet#lesen" title="Histogramm lesen"></iframe>
+        </div>
+        <a class="open" href="binomialverteilung.html#lesen" target="_blank">Tool in eigenem Fenster öffnen</a>
+      </div>
+
+      <div class="tasks card">
+        <h2><span class="nr">Aufgabe 1</span> | Was zeigt ein Histogramm?</h2>
+        <p class="intro">
+          Das Tool zeigt die Binomialverteilung mit <i>n</i>&nbsp;=&nbsp;10 und <i>p</i>&nbsp;=&nbsp;0,2 aus AB 36
+          als <strong>Histogramm</strong>. Tippe auf die Balken.
+        </p>
+        <ol class="items">
+          <li><span class="op">Beschreibe</span>, was auf der Rechtsachse und was auf der Hochachse
+              abgetragen ist und was ein einzelner Balken darstellt.</li>
+          <li><span class="op">Gib an</span>, welchen Wert die Zufallsgröße <i>X</i> am wahrscheinlichsten
+              annimmt. <span class="op">Vergleiche</span> mit deiner GTR-Tabelle aus AB 36.</li>
+          <li><span class="op">Bestimme</span> <i>P</i>(<i>X</i> ≤ 2) mithilfe des Histogramms.
+              <span class="op">Erläutere</span>, wie man diese Wahrscheinlichkeit im Histogramm „sieht“.</li>
+          <li><span class="op">Begründe</span>, warum die Höhen aller Balken zusammen 1 ergeben.</li>
+          <li><span class="op">Deute</span> das Histogramm am Galtonbrett: Was bedeuten <i>n</i>, <i>p</i>
+              und <i>k</i>, was bedeutet die Höhe eines Balkens?</li>
+        </ol>
+        <p class="note">Notiere deine Ergebnisse im Heft.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="aufgabe2">
+    <div class="work">
+      <div class="tool" id="t2">
+        <div class="frame">
+          <iframe src="binomialverteilung.html?eingebettet#erkunden" title="n und p verändern"></iframe>
+        </div>
+        <a class="open" href="binomialverteilung.html#erkunden" target="_blank">Tool in eigenem Fenster öffnen</a>
+      </div>
+
+      <div class="tasks card">
+        <h2><span class="nr">Aufgabe 2</span> | Wie hängt die Gestalt von <i>n</i> und <i>p</i> ab?</h2>
+        <p class="intro">
+          Mit den Reglern stellst du <i>n</i> und <i>p</i> ein. Mit „Vergleichsbild merken“ bleibt ein
+          Histogramm gestrichelt stehen, sodass du zwei Einstellungen vergleichen kannst.
+        </p>
+        <ol class="items">
+          <li>Stelle <i>n</i>&nbsp;=&nbsp;10 ein und verändere <i>p</i>. <span class="op">Beschreibe</span>, wie sich
+              die Lage des höchsten Balkens verändert.</li>
+          <li><span class="op">Vergleiche</span> die Histogramme für <i>p</i>&nbsp;=&nbsp;0,3 und <i>p</i>&nbsp;=&nbsp;0,7
+              (<i>n</i>&nbsp;=&nbsp;10). <span class="op">Erkläre</span> deine Beobachtung mithilfe von Erfolg und Misserfolg.</li>
+          <li><span class="op">Nenne</span> die Besonderheit des Histogramms für <i>p</i>&nbsp;=&nbsp;0,5 und
+              <span class="op">begründe</span> sie am Galtonbrett.</li>
+          <li>Stelle <i>p</i>&nbsp;=&nbsp;0,3 ein und erhöhe <i>n</i> schrittweise von 5 bis 50.
+              <span class="op">Beschreibe</span>, wie sich Lage, Breite und Höhe des Histogramms verändern.</li>
+          <li><span class="op">Erkläre</span>, warum das Histogramm mit wachsendem <i>n</i> flacher werden muss.
+              <span class="tipp">Tipp: Aufgabe 1 d).</span></li>
+          <li><span class="op">Stelle</span> eine Vermutung <span class="op">auf</span>, bei welchem <i>k</i>
+              der höchste Balken in Abhängigkeit von <i>n</i> und <i>p</i> liegt.
+              <span class="op">Überprüfe</span> deine Vermutung an drei selbst gewählten Beispielen.</li>
+          <li class="extra"><span class="op">Untersuche</span> die Extremfälle <i>p</i>&nbsp;=&nbsp;0 und <i>p</i>&nbsp;=&nbsp;1.
+              <span class="op">Erläutere</span> die Histogramme.</li>
+        </ol>
+        <p class="note">Notiere deine Ergebnisse im Heft.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+</body>
+</html>
