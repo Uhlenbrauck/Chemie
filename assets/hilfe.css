@@ -1,0 +1,123 @@
+/* Gemeinsames Design für Hilfekarten (h/<kennung>/index.html) */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #f7f6f2;
+  --surface: #ffffff;
+  --border:  #d9d6cc;
+  --text:    #1a1a18;
+  --muted:   #6b6960;
+  --tag:     #9dc3e6;
+  --tag-text:#1f3f63;
+  --loesung: #e8f0eb;
+  --loesung-border: #2d5a3d;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding: 24px 16px 48px;
+  -webkit-text-size-adjust: 100%;
+}
+
+.karte {
+  max-width: 760px;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px 28px;
+}
+
+.karte.loesung {
+  background: var(--loesung);
+  border-color: var(--loesung-border);
+}
+
+.kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.art {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.art .nr {
+  display: inline-block;
+  min-width: 24px;
+  padding: 1px 6px;
+  background: var(--tag);
+  color: var(--tag-text);
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0;
+}
+
+.inhalt { font-size: 20px; }
+
+.inhalt > * + * { margin-top: 0.8em; }
+
+.inhalt h2 { font-size: 22px; }
+
+.inhalt ul, .inhalt ol { padding-left: 1.3em; }
+
+.inhalt li + li { margin-top: 0.35em; }
+
+.inhalt img, .inhalt video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0.8em auto;
+}
+
+.inhalt table {
+  border-collapse: collapse;
+  font-size: 18px;
+}
+
+.inhalt th, .inhalt td {
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  text-align: left;
+}
+
+.inhalt a { color: #1f5fa8; }
+
+.inhalt blockquote {
+  border-left: 4px solid var(--tag);
+  padding-left: 14px;
+  color: var(--muted);
+}
+
+/* Wortspeicher: Begriffe als Kärtchen nebeneinander */
+.wortspeicher ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  padding: 0 !important;
+}
+
+.wortspeicher ul li {
+  margin: 0 !important;
+  padding: 6px 14px;
+  border: 2px solid var(--tag);
+  border-radius: 18px;
+  font-size: 18px;
+}
