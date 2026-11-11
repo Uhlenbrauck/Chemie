@@ -766,6 +766,12 @@ class Macro {
     for (const d of this.steam) {
       d.y -= d.v * dt;
       d.x += (d.drift + rand(-1, 1) * 30) * dt;
+      // Solange der Dampf im Glas ist, prallt er an der Glaswand ab
+      if (d.y > 0) {
+        const lo = d.r + 3, hi = BEAKER.w - d.r - 3;
+        if (d.x < lo) { d.x = lo; d.drift = Math.abs(d.drift); }
+        if (d.x > hi) { d.x = hi; d.drift = -Math.abs(d.drift); }
+      }
     }
     this.steam = this.steam.filter(d => (gas || boiling) && d.y > -110);
   }
