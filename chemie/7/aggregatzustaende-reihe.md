@@ -10,7 +10,7 @@ Absprachen zur Reihe und zur Animation `aggregatzustaende.html`.
 | 2 | Lehrervortrag „Energiebegriff“ (PPT) | Energieformen, Energieerhaltung, Enthalpie, Modell der Energiewürfel | – |
 | 3 | **AB 05** | Aggregatzustandsänderungen mit Energiewürfeln, Enthalpiediagramm s < l < g. Mit **physischen Holzwürfeln**. | – (Energiewürfel bewusst nicht in der Animation) |
 | 4 | **AB 06** | Einstieg: Video „The Super Zoom“. Infotext (ersetzt Leifi), Tabelle „Aggregatzustände im Teilchenmodell“, Zeichnungen. | Teil 1 `#zustaende` |
-| 5 | **neues AB** (Aufgabe 2 und 3 aus AB 06 ausgelagert) | Übergänge im Teilchenmodell, Abschluss mit Bezug zu AB 04 und AB 05 | Teil 2 `#temperatur`, Teil 3 `#erhitzen` |
+| 5 | **AB 07** (Aufgabe 2 und 3 aus AB 06 ausgelagert) | Übergänge im Teilchenmodell, Abschluss mit Bezug zu AB 04 und AB 05 | Teil 2 `#temperatur`, Teil 3 `#erhitzen` |
 
 Zwischen Schritt 4 und 5 wird die Tabelle im Plenum gesichert.
 
@@ -38,10 +38,13 @@ Thermometer angehoben wie in V4.
   und 100 °C (Wasserstand sinkt).
 - Die Heizplatte lässt sich nur einschalten. Abkühlen wird nicht thematisiert;
   die Rückrichtung zeigt Teil 2.
+- Start bei −20 °C (Eis aus dem Gefrierschrank). Das Eis wird didaktisch langsamer erwärmt
+  (etwa 15 s Ablauf, 1,5 min Versuchszeit), damit man sieht, wie die Schwingung zunimmt
+  (AB 07, Aufgabe 2c).
 - Zeitverhältnisse: Schmelzen leicht verkürzt (60 statt etwa 80 Energieeinheiten),
   Verdampfen im realen Verhältnis, Erwärmen von 0 auf 100 °C im **Zeitraffer ×4**
   (wird angezeigt; Stoppuhr und Diagramm zeigen die echte Versuchszeit).
-- Bis zum Sieden etwa 8,5 min Versuchszeit, ähnlich wie V4.
+- Bis zum Sieden etwa 9,5 min Versuchszeit, ähnlich wie V4.
 
 **Didaktische Reduktion (bewusst so entschieden):** Gasteilchen bewegen sich bei 100 °C schneller
 als Flüssigkeitsteilchen, passend zur Tabelle auf AB 06 („gasförmig: viel Energie“).
