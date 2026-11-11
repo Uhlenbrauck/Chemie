@@ -217,6 +217,8 @@
   .bar.sel   { fill: var(--bar-sel); }
   .bar.dim   { fill: #9fb6d8; }
   .bar.outlined { stroke: var(--text); stroke-width: 2; }
+  .cut      { fill: none; stroke: #fff; stroke-width: 3; }
+  .cutarrow { fill: #fff; }
   .ghost     { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 5 3; }
 
   /* Lehrermodus */
@@ -268,16 +270,16 @@
   <div class="row" id="rowN" hidden>
     <span class="param">n</span>
     <button class="step" id="nMinus" aria-label="n verkleinern">−</button>
-    <input type="range" id="nSlider" min="1" max="50" step="1" value="10" aria-label="n">
+    <input type="range" id="nSlider" min="10" max="50" step="1" value="10" aria-label="n">
     <button class="step" id="nPlus" aria-label="n vergrößern">+</button>
     <span class="readout" id="nOut">10</span>
   </div>
   <div class="row" id="rowP" hidden>
     <span class="param">p</span>
     <button class="step" id="pMinus" aria-label="p verkleinern">−</button>
-    <input type="range" id="pSlider" min="0" max="100" step="1" value="30" aria-label="p">
+    <input type="range" id="pSlider" min="0" max="100" step="1" value="50" aria-label="p">
     <button class="step" id="pPlus" aria-label="p vergrößern">+</button>
-    <span class="readout" id="pOut">0,30</span>
+    <span class="readout" id="pOut">0,50</span>
   </div>
   <div class="row buttons" id="rowButtons" hidden>
     <button class="btn" id="btnFix" aria-pressed="true">Hochachse festhalten</button>
@@ -296,8 +298,9 @@
 const CFG = {
   part1N: 10,      // Teil 1: feste Verteilung (wie GTR-Beispiel auf AB 36)
   part1P: 0.2,
+  part2NMin: 10,   // Teil 2: kleinstes n am Regler
   part2NMax: 50,   // Teil 2: größtes n am Regler
-  fixedYMax: 1,    // Teil 2: Hochachse bis … , wenn „festhalten“ an ist
+  fixedYMax: 0.3,  // Teil 2: Hochachse bis … , wenn „festhalten“ an ist (höhere Balken werden gekappt)
 };
 
 const HASHES = { 1: '#lesen', 2: '#erkunden' };
@@ -306,7 +309,7 @@ const SVGNS = 'http://www.w3.org/2000/svg';
 const state = {
   part: 1,
   n: 10,
-  p: 0.30,
+  p: 0.50,
   fixY: true,
   ghost: null,          // { n, p, values }
   sel1: null,           // ausgewählter Balken in Teil 1
@@ -408,6 +411,14 @@ function draw() {
     if (state.part === 1 && sel !== null && sel !== k) cls += ' dim';
     if (state.part === 2 && sel === k) cls += ' outlined';
     el('rect', { x: X(k) - barW / 2, y, width: barW, height: Math.max(0, h), class: cls });
+    if (v > yMax) {
+      // Balken ist höher als die Hochachse: oben mit Bruchkante und Pfeil kennzeichnen
+      const x0 = X(k) - barW / 2, z = Math.min(6, barW / 4);
+      el('path', { d: `M${x0 - 1} ${y + 22} l${barW / 4 + 1} ${-z} l${barW / 4} ${z} l${barW / 4} ${-z} l${barW / 4 + 1} ${z}`,
+                   class: 'cut' });
+      const a = Math.min(7, barW / 3);
+      el('path', { d: `M${X(k) - a} ${y + 14} L${X(k)} ${y + 5} L${X(k) + a} ${y + 14} Z`, class: 'cutarrow' });
+    }
   }
 
   if (ghost) {
@@ -488,7 +499,7 @@ const ui = {
 };
 
 function setN(n) {
-  state.n = Math.max(1, Math.min(CFG.part2NMax, Math.round(n)));
+  state.n = Math.max(CFG.part2NMin, Math.min(CFG.part2NMax, Math.round(n)));
   ui.nSlider.value = state.n;
   ui.nOut.textContent = state.n;
   if (state.sel2 !== null && state.sel2 > state.n) state.sel2 = null;
@@ -556,6 +567,7 @@ function setupTeacher() {
     <label>n <input type="number" id="t1n" min="1" max="100" step="1"></label>
     <label>p <input type="number" id="t1p" min="0" max="1" step="0.001"></label>
     <h3>Teil 2</h3>
+    <label>kleinstes n am Regler <input type="number" id="t2min" min="1" max="50" step="1"></label>
     <label>größtes n am Regler <input type="number" id="t2max" min="10" max="100" step="1"></label>
     <label>Hochachse fest bis <input type="number" id="t2y" min="0.05" max="1" step="0.05"></label>
     <button class="btn" id="tCopy">Werte kopieren</button>
@@ -565,6 +577,7 @@ function setupTeacher() {
   const f = id => box.querySelector('#' + id);
   f('t1n').value = CFG.part1N;
   f('t1p').value = CFG.part1P;
+  f('t2min').value = CFG.part2NMin;
   f('t2max').value = CFG.part2NMax;
   f('t2y').value = CFG.fixedYMax;
 
@@ -576,12 +589,16 @@ function setupTeacher() {
     CFG.part1P = Math.max(0, Math.min(1, +e.target.value || 0));
     e.target.value = CFG.part1P; draw();
   });
+  f('t2min').addEventListener('change', e => {
+    CFG.part2NMin = Math.max(1, Math.min(CFG.part2NMax, Math.round(+e.target.value || 1)));
+    e.target.value = CFG.part2NMin; ui.nSlider.min = CFG.part2NMin; setN(state.n);
+  });
   f('t2max').addEventListener('change', e => {
-    CFG.part2NMax = Math.max(10, Math.min(100, Math.round(+e.target.value || 50)));
+    CFG.part2NMax = Math.max(CFG.part2NMin, Math.min(100, Math.round(+e.target.value || 50)));
     e.target.value = CFG.part2NMax; ui.nSlider.max = CFG.part2NMax; setN(state.n);
   });
   f('t2y').addEventListener('change', e => {
-    CFG.fixedYMax = Math.max(0.05, Math.min(1, +e.target.value || 1));
+    CFG.fixedYMax = Math.max(0.05, Math.min(1, +e.target.value || 0.3));
     e.target.value = CFG.fixedYMax; draw();
   });
   f('tCopy').addEventListener('click', async () => {
