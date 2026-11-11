@@ -3,6 +3,11 @@
 Unterrichtsmaterial (Animationen, Simulationen, Hilfekarten) für Chemie und Mathe.
 Veröffentlicht über GitHub Pages: https://uhlenbrauck.github.io/unterricht/
 
+Absprachen zu einzelnen Reihen liegen neben dem Material, z. B. `chemie/7/aggregatzustaende-reihe.md`.
+
+Die Datei `.nojekyll` muss bleiben: Ohne sie verarbeitet GitHub Pages das Repo mit Jekyll,
+und Ordner mit `_` am Anfang (z. B. `h/_bilder/`) würden nicht ausgeliefert.
+
 ## Aufbau
 
 ```
