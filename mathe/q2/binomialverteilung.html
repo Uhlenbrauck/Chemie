@@ -54,6 +54,10 @@
 
   .tabs .btn { border: none; border-radius: 0; }
 
+  /* Eingebettet in die Erarbeitungsseite (?eingebettet): ohne Titel und Reiter */
+  body.embedded header { display: none; }
+  body.embedded #stage { margin: 0; border-radius: 0; border-left: 0; border-right: 0; border-top: 0; }
+
   #stage {
     flex: 1;
     position: relative;
@@ -591,6 +595,7 @@ function setupTeacher() {
 }
 
 if (new URLSearchParams(location.search).has('lehrer')) setupTeacher();
+if (new URLSearchParams(location.search).has('eingebettet')) document.body.classList.add('embedded');
 
 setN(state.n);
 setP(state.p);
