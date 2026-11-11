@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Binomialverteilung – Histogramme</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #f7f6f2;
+    --surface:   #ffffff;
+    --border:    #d9d6cc;
+    --text:      #1a1a18;
+    --muted:     #6b6960;
+    --accent:    #2d5a3d;
+    --bar:       #3b6fb6;
+    --bar-sel:   #e07b1a;
+    --bar-max:   #e07b1a;
+    --grid:      #e6e3da;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  header {
+    padding: 10px 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  header strong { font-size: 15px; font-weight: 600; }
+
+  .tabs {
+    display: inline-flex;
+    border: 2px solid var(--border);
+    border-radius: 22px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .tabs .btn { border: none; border-radius: 0; }
+
+  #stage {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+    margin: 8px 16px 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  #chart {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+  }
+
+  .controls {
+    padding: 8px 16px calc(14px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 860px;
+  }
+
+  .row.buttons { justify-content: center; flex-wrap: wrap; }
+
+  [hidden] { display: none !important; }
+
+  .param {
+    flex: none;
+    width: 28px;
+    font-size: 24px;
+    font-style: italic;
+    font-family: "Times New Roman", Times, serif;
+    text-align: center;
+  }
+
+  .step {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    font-size: 26px;
+    line-height: 1;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .step:active { background: #eee; }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    min-width: 0;
+    height: 48px;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 10px;
+    border-radius: 5px;
+    background: var(--border);
+  }
+
+  input[type=range]::-moz-range-track {
+    height: 10px;
+    border-radius: 5px;
+    background: var(--border);
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 34px;
+    height: 34px;
+    margin-top: -12px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 3px solid var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  }
+
+  input[type=range]::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 3px solid var(--text);
+  }
+
+  .readout {
+    flex: none;
+    min-width: 72px;
+    text-align: right;
+    font-size: 24px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .value {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+
+  .value .hint { color: var(--muted); font-size: 17px; }
+  .value i { font-family: "Times New Roman", Times, serif; font-size: 24px; }
+
+  .btn {
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: 22px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .btn:disabled { cursor: default; opacity: .45; }
+
+  .btn[aria-pressed=true], .btn[aria-selected=true] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* SVG */
+  .axis      { stroke: var(--text); stroke-width: 1.5; }
+  .gridline  { stroke: var(--grid); stroke-width: 1; }
+  .ticklabel { fill: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .axislabel { fill: var(--text); font-size: 17px; font-family: "Times New Roman", Times, serif; font-style: italic; }
+  .axislabel tspan.up { font-style: normal; }
+  .title     { fill: var(--text); font-size: 17px; font-family: "Times New Roman", Times, serif; }
+  .ghosttitle{ fill: var(--muted); font-size: 15px; font-family: "Times New Roman", Times, serif; }
+  .bar       { fill: var(--bar); }
+  .bar.max   { fill: var(--bar-max); }
+  .bar.sel   { fill: var(--bar-sel); }
+  .bar.dim   { fill: #9fb6d8; }
+  .bar.outlined { stroke: var(--text); stroke-width: 2; }
+  .ghost     { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 5 3; }
+
+  /* Lehrermodus */
+  #teacher {
+    position: fixed;
+    top: 8px;
+    right: 8px;
+    width: 280px;
+    max-height: calc(100% - 16px);
+    overflow: auto;
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.15);
+    z-index: 10;
+  }
+
+  #teacher summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+  #teacher h3 { font-size: 13px; margin-top: 10px; }
+  #teacher label {
+    display: grid;
+    grid-template-columns: 1fr 80px;
+    gap: 2px 8px;
+    margin-top: 6px;
+    align-items: center;
+  }
+  #teacher input { width: 100%; font: inherit; padding: 4px; }
+  #teacher .btn { margin-top: 10px; min-height: 34px; font-size: 13px; padding: 0 12px; }
+  #teacher .note { color: var(--muted); margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<header>
+  <strong>Binomialverteilung</strong>
+  <div class="tabs" role="tablist" aria-label="Teil auswählen">
+    <button class="btn" role="tab" id="tab1" aria-selected="true">1 Histogramm lesen</button>
+    <button class="btn" role="tab" id="tab2" aria-selected="false">2 n und p verändern</button>
+  </div>
+</header>
+
+<div id="stage">
+  <svg id="chart" xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm"></svg>
+</div>
+
+<div class="controls">
+  <div class="row" id="rowN" hidden>
+    <span class="param">n</span>
+    <button class="step" id="nMinus" aria-label="n verkleinern">−</button>
+    <input type="range" id="nSlider" min="1" max="50" step="1" value="10" aria-label="n">
+    <button class="step" id="nPlus" aria-label="n vergrößern">+</button>
+    <span class="readout" id="nOut">10</span>
+  </div>
+  <div class="row" id="rowP" hidden>
+    <span class="param">p</span>
+    <button class="step" id="pMinus" aria-label="p verkleinern">−</button>
+    <input type="range" id="pSlider" min="0" max="100" step="1" value="30" aria-label="p">
+    <button class="step" id="pPlus" aria-label="p vergrößern">+</button>
+    <span class="readout" id="pOut">0,30</span>
+  </div>
+  <div class="row buttons" id="rowButtons" hidden>
+    <button class="btn" id="btnFix" aria-pressed="true">Hochachse festhalten</button>
+    <button class="btn" id="btnGhost">Vergleichsbild merken</button>
+    <button class="btn" id="btnGhostClear" disabled>Vergleichsbild löschen</button>
+  </div>
+  <div class="row value" id="valueRow"><span class="hint">Tippe auf einen Balken.</span></div>
+</div>
+
+<script>
+'use strict';
+
+/* ─────────────────────────────────────────────
+   Einstellungen (im Lehrermodus über ?lehrer veränderbar)
+   ───────────────────────────────────────────── */
+const CFG = {
+  part1N: 10,      // Teil 1: feste Verteilung (wie GTR-Beispiel auf AB 36)
+  part1P: 0.2,
+  part2NMax: 50,   // Teil 2: größtes n am Regler
+  fixedYMax: 1,    // Teil 2: Hochachse bis … , wenn „festhalten“ an ist
+};
+
+const HASHES = { 1: '#lesen', 2: '#erkunden' };
+const SVGNS = 'http://www.w3.org/2000/svg';
+
+const state = {
+  part: 1,
+  n: 10,
+  p: 0.30,
+  fixY: true,
+  ghost: null,          // { n, p, values }
+  sel1: null,           // ausgewählter Balken in Teil 1
+  sel2: null,           // ausgewählter Balken in Teil 2
+};
+
+/* ── Mathematik ── */
+function binom(n, p) {
+  const v = new Array(n + 1);
+  let c = 1;                                   // Binomialkoeffizient (n über k)
+  for (let k = 0; k <= n; k++) {
+    if (k > 0) c = c * (n - k + 1) / k;
+    v[k] = c * Math.pow(p, k) * Math.pow(1 - p, n - k);
+  }
+  return v;
+}
+
+function fmt(x, d) { return x.toFixed(d).replace('.', ','); }
+
+function fmtP(p) {
+  // p mit zwei Nachkommastellen, im Lehrermodus ggf. mehr
+  const s = String(Math.round(p * 10000) / 10000);
+  const dec = s.includes('.') ? s.split('.')[1].length : 0;
+  return fmt(p, Math.max(2, dec));
+}
+
+function niceStep(max, target) {
+  const raw = max / target;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  for (const m of [1, 2, 2.5, 5, 10]) if (m * mag >= raw) return m * mag;
+  return 10 * mag;
+}
+
+/* ── Zeichnen ── */
+const svg = document.getElementById('chart');
+let geom = null;   // für Treffer beim Antippen
+
+function el(name, attrs, parent) {
+  const e = document.createElementNS(SVGNS, name);
+  for (const a in attrs) e.setAttribute(a, attrs[a]);
+  (parent || svg).appendChild(e);
+  return e;
+}
+
+function current() {
+  if (state.part === 1) return { n: CFG.part1N, p: CFG.part1P };
+  return { n: state.n, p: state.p };
+}
+
+function draw() {
+  const W = svg.clientWidth, H = svg.clientHeight;
+  if (!W || !H) return;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+  const { n, p } = current();
+  const values = binom(n, p);
+  const ghost = state.part === 2 ? state.ghost : null;
+  const nAxis = Math.max(n, ghost ? ghost.n : 0);
+
+  // Hochachse
+  let yMax;
+  const dataMax = Math.max(...values, ...(ghost ? ghost.values : [0]));
+  if (state.part === 2 && state.fixY) {
+    yMax = CFG.fixedYMax;
+  } else {
+    const step = niceStep(dataMax, 5);
+    yMax = Math.max(step, Math.ceil(dataMax / step - 1e-9) * step);
+    if (yMax < dataMax) yMax += step;
+  }
+  const yStep = niceStep(yMax, H < 360 ? 4 : 6);
+
+  const m = { l: 64, r: 18, t: 40, b: 50 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const slot = pw / (nAxis + 1);
+  const barW = Math.max(1, slot * (nAxis > 30 ? 0.86 : 0.8));
+  const X = k => m.l + slot * (k + 0.5);
+  const Y = v => m.t + ph * (1 - Math.min(v, yMax) / yMax);
+  geom = { m, slot, nAxis, n };
+
+  // Gitter und Beschriftung Hochachse
+  const yDec = (String(+yStep.toPrecision(6)).split('.')[1] || '').length;
+  for (let i = 0; i * yStep <= yMax + 1e-9; i++) {
+    const v = i * yStep, y = Y(v);
+    if (i > 0) el('line', { x1: m.l, x2: m.l + pw, y1: y, y2: y, class: 'gridline' });
+    const t = el('text', { x: m.l - 8, y: y + 4, 'text-anchor': 'end', class: 'ticklabel' });
+    t.textContent = fmt(v, i === 0 ? 0 : yDec);
+  }
+
+  // Balken (Vergleichsbild wird danach als Umriss darübergelegt)
+  const maxV = Math.max(...values);
+  const sel = state.part === 1 ? state.sel1 : state.sel2;
+  for (let k = 0; k <= n; k++) {
+    const v = values[k];
+    const y = Y(v), h = m.t + ph - y;
+    let cls = 'bar';
+    if (state.part === 2 && maxV - v < 1e-12) cls += ' max';
+    if (state.part === 1 && sel === k) cls += ' sel';
+    if (state.part === 1 && sel !== null && sel !== k) cls += ' dim';
+    if (state.part === 2 && sel === k) cls += ' outlined';
+    el('rect', { x: X(k) - barW / 2, y, width: barW, height: Math.max(0, h), class: cls });
+  }
+
+  if (ghost) {
+    for (let k = 0; k <= ghost.n; k++) {
+      const v = ghost.values[k];
+      if (v < yMax * 1e-4) continue;
+      const y = Y(v), h = m.t + ph - y;
+      el('rect', { x: X(k) - barW / 2, y, width: barW, height: h, class: 'ghost' });
+    }
+  }
+
+  // Achsen
+  el('line', { x1: m.l, x2: m.l + pw, y1: m.t + ph, y2: m.t + ph, class: 'axis' });
+  el('line', { x1: m.l, x2: m.l, y1: m.t + ph, y2: m.t - 10, class: 'axis' });
+
+  // Beschriftung Rechtsachse
+  const minLabelGap = 26;
+  let kStep = 1;
+  for (const s of [1, 2, 5, 10, 20]) { kStep = s; if (slot * s >= minLabelGap) break; }
+  for (let k = 0; k <= nAxis; k += kStep) {
+    const t = el('text', { x: X(k), y: m.t + ph + 20, 'text-anchor': 'middle', class: 'ticklabel' });
+    t.textContent = k;
+  }
+
+  // Achsentitel
+  const tk = el('text', { x: m.l + pw, y: m.t + ph + 42, 'text-anchor': 'end', class: 'axislabel' });
+  tk.textContent = 'k';
+  const ty = el('text', { x: 8, y: 22, class: 'axislabel' });
+  ty.innerHTML = 'P<tspan class="up">(</tspan>X<tspan class="up"> = </tspan>k<tspan class="up">)</tspan>';
+
+  // Parameter oben rechts
+  const tt = el('text', { x: m.l + pw, y: 22, 'text-anchor': 'end', class: 'title' });
+  tt.innerHTML = `<tspan font-style="italic">n</tspan> = ${n},  <tspan font-style="italic">p</tspan> = ${fmtP(p)}`;
+  if (ghost) {
+    const tg = el('text', { x: m.l + pw, y: 40, 'text-anchor': 'end', class: 'ghosttitle' });
+    tg.innerHTML = `Vergleich (gestrichelt): <tspan font-style="italic">n</tspan> = ${ghost.n},  <tspan font-style="italic">p</tspan> = ${fmtP(ghost.p)}`;
+  }
+
+  updateValue(values);
+}
+
+function updateValue(values) {
+  const row = document.getElementById('valueRow');
+  const sel = state.part === 1 ? state.sel1 : state.sel2;
+  if (sel === null || sel >= values.length) {
+    row.innerHTML = '<span class="hint">Tippe auf einen Balken.</span>';
+  } else {
+    row.innerHTML = `<span><i>k</i>&nbsp;=&nbsp;${sel}:&emsp;<i>P</i>(<i>X</i>&nbsp;=&nbsp;${sel})&nbsp;=&nbsp;${fmt(values[sel], 4)}</span>`;
+  }
+}
+
+/* ── Antippen: nächster Balken zur Tippstelle ── */
+svg.addEventListener('pointerdown', e => {
+  if (!geom) return;
+  const r = svg.getBoundingClientRect();
+  const x = e.clientX - r.left;
+  let k = Math.floor((x - geom.m.l) / geom.slot);
+  if (k < 0 || k > geom.n) return;
+  if (state.part === 1) state.sel1 = state.sel1 === k ? null : k;
+  else state.sel2 = state.sel2 === k ? null : k;
+  draw();
+});
+
+/* ── Bedienung ── */
+const ui = {
+  tab1: document.getElementById('tab1'),
+  tab2: document.getElementById('tab2'),
+  rowN: document.getElementById('rowN'),
+  rowP: document.getElementById('rowP'),
+  rowButtons: document.getElementById('rowButtons'),
+  nSlider: document.getElementById('nSlider'),
+  pSlider: document.getElementById('pSlider'),
+  nOut: document.getElementById('nOut'),
+  pOut: document.getElementById('pOut'),
+  btnFix: document.getElementById('btnFix'),
+  btnGhost: document.getElementById('btnGhost'),
+  btnGhostClear: document.getElementById('btnGhostClear'),
+};
+
+function setN(n) {
+  state.n = Math.max(1, Math.min(CFG.part2NMax, Math.round(n)));
+  ui.nSlider.value = state.n;
+  ui.nOut.textContent = state.n;
+  if (state.sel2 !== null && state.sel2 > state.n) state.sel2 = null;
+  draw();
+}
+
+function setP(p) {
+  state.p = Math.max(0, Math.min(1, Math.round(p * 100) / 100));
+  ui.pSlider.value = Math.round(state.p * 100);
+  ui.pOut.textContent = fmt(state.p, 2);
+  draw();
+}
+
+function partFromHash() {
+  return Number(Object.keys(HASHES).find(k => HASHES[k] === location.hash)) || 1;
+}
+
+function showPart(k) {
+  state.part = k;
+  ui.tab1.setAttribute('aria-selected', k === 1);
+  ui.tab2.setAttribute('aria-selected', k === 2);
+  ui.rowN.hidden = ui.rowP.hidden = ui.rowButtons.hidden = k !== 2;
+  if (location.hash !== HASHES[k]) history.replaceState(null, '', HASHES[k]);
+  draw();
+}
+
+ui.tab1.addEventListener('click', () => showPart(1));
+ui.tab2.addEventListener('click', () => showPart(2));
+window.addEventListener('hashchange', () => showPart(partFromHash()));
+
+ui.nSlider.addEventListener('input', () => setN(+ui.nSlider.value));
+ui.pSlider.addEventListener('input', () => setP(+ui.pSlider.value / 100));
+document.getElementById('nMinus').addEventListener('click', () => setN(state.n - 1));
+document.getElementById('nPlus').addEventListener('click', () => setN(state.n + 1));
+document.getElementById('pMinus').addEventListener('click', () => setP(state.p - 0.01));
+document.getElementById('pPlus').addEventListener('click', () => setP(state.p + 0.01));
+
+ui.btnFix.addEventListener('click', () => {
+  state.fixY = !state.fixY;
+  ui.btnFix.setAttribute('aria-pressed', state.fixY);
+  draw();
+});
+
+ui.btnGhost.addEventListener('click', () => {
+  state.ghost = { n: state.n, p: state.p, values: binom(state.n, state.p) };
+  ui.btnGhostClear.disabled = false;
+  draw();
+});
+
+ui.btnGhostClear.addEventListener('click', () => {
+  state.ghost = null;
+  ui.btnGhostClear.disabled = true;
+  draw();
+});
+
+new ResizeObserver(draw).observe(document.getElementById('stage'));
+
+/* ── Lehrermodus ── */
+function setupTeacher() {
+  const box = document.createElement('details');
+  box.id = 'teacher';
+  box.innerHTML = `
+    <summary>Lehrermodus</summary>
+    <h3>Teil 1</h3>
+    <label>n <input type="number" id="t1n" min="1" max="100" step="1"></label>
+    <label>p <input type="number" id="t1p" min="0" max="1" step="0.001"></label>
+    <h3>Teil 2</h3>
+    <label>größtes n am Regler <input type="number" id="t2max" min="10" max="100" step="1"></label>
+    <label>Hochachse fest bis <input type="number" id="t2y" min="0.05" max="1" step="0.05"></label>
+    <button class="btn" id="tCopy">Werte kopieren</button>
+    <div class="note" id="tNote">Kopiert die Tabelle k, P(X = k) des angezeigten Histogramms (für Excel/GTR).</div>`;
+  document.body.appendChild(box);
+
+  const f = id => box.querySelector('#' + id);
+  f('t1n').value = CFG.part1N;
+  f('t1p').value = CFG.part1P;
+  f('t2max').value = CFG.part2NMax;
+  f('t2y').value = CFG.fixedYMax;
+
+  f('t1n').addEventListener('change', e => {
+    CFG.part1N = Math.max(1, Math.min(100, Math.round(+e.target.value || 1)));
+    e.target.value = CFG.part1N; state.sel1 = null; draw();
+  });
+  f('t1p').addEventListener('change', e => {
+    CFG.part1P = Math.max(0, Math.min(1, +e.target.value || 0));
+    e.target.value = CFG.part1P; draw();
+  });
+  f('t2max').addEventListener('change', e => {
+    CFG.part2NMax = Math.max(10, Math.min(100, Math.round(+e.target.value || 50)));
+    e.target.value = CFG.part2NMax; ui.nSlider.max = CFG.part2NMax; setN(state.n);
+  });
+  f('t2y').addEventListener('change', e => {
+    CFG.fixedYMax = Math.max(0.05, Math.min(1, +e.target.value || 1));
+    e.target.value = CFG.fixedYMax; draw();
+  });
+  f('tCopy').addEventListener('click', async () => {
+    const { n, p } = current();
+    const v = binom(n, p);
+    const text = `n = ${n}\tp = ${fmtP(p)}\nk\tP(X = k)\n` +
+      v.map((x, k) => `${k}\t${fmt(x, 6)}`).join('\n');
+    try { await navigator.clipboard.writeText(text); f('tNote').textContent = 'Kopiert.'; }
+    catch (err) { f('tNote').textContent = 'Kopieren nicht möglich.'; }
+  });
+}
+
+if (new URLSearchParams(location.search).has('lehrer')) setupTeacher();
+
+setN(state.n);
+setP(state.p);
+showPart(partFromHash());
+</script>
+</body>
+</html>
