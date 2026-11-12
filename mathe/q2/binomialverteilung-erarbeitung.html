@@ -133,6 +133,33 @@
     vertical-align: 3px;
   }
 
+
+  details.tip { margin-top: 6px; }
+  details.tip summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 22px;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    color: var(--accent);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+  details.tip summary::-webkit-details-marker { display: none; }
+  details.tip summary::after { content: " ▾"; margin-left: 4px; }
+  details.tip[open] summary::after { content: " ▴"; }
+  details.tip p {
+    margin-top: 6px;
+    padding: 10px 12px;
+    background: var(--accent-lt);
+    border-radius: 8px;
+    font-size: 15px;
+  }
+
   .op { font-weight: 700; }
   .tipp { color: var(--muted); font-style: italic; }
 
@@ -201,13 +228,22 @@
         </p>
         <p class="intro">Das Tool zeigt die Wahrscheinlichkeitsverteilung von <i>X</i> als <strong>Histogramm</strong>. Tippe auf die Balken.</p>
         <ol class="items">
-          <li><span class="op">Begründe</span>, dass <i>X</i> binomialverteilt ist, und <span class="op">gib</span> <i>n</i> und <i>p</i> <span class="op">an</span>.</li>
-          <li><span class="op">Erläutere</span>, was ein einzelner Balken im Sachzusammenhang bedeutet.</li>
-          <li><span class="op">Gib an</span>, wie viele richtige Antworten Jonas am wahrscheinlichsten hat, und <span class="op">bestimme</span> die zugehörige Wahrscheinlichkeit.</li>
-          <li>Der Test ist ab 5 richtigen Antworten bestanden. <span class="op">Beurteile</span> mithilfe des Histogramms, ob Jonas mit Raten gute Chancen hat, den Test zu bestehen. <span class="op">Beschreibe</span>, welcher Teil des Histogramms dafür entscheidend ist.</li>
-          <li>Jeder Balken ist 1 breit. <span class="op">Begründe</span>, dass alle Balken zusammen den Flächeninhalt 1 haben.</li>
+          <li><span class="op">Begründe</span>, dass <i>X</i> binomialverteilt ist, und <span class="op">gib</span> <i>n</i> und <i>p</i> <span class="op">an</span>.
+            <details class="tip"><summary>Tipp</summary><p>Erinnere dich an die Bedingungen für eine Bernoulli-Kette aus AB 36: Was ist hier ein „Erfolg“? Wie oft wird das Zufallsexperiment durchgeführt? Ändert sich die Erfolgswahrscheinlichkeit von Frage zu Frage?</p></details>
+          </li>
+          <li><span class="op">Erläutere</span>, was ein einzelner Balken im Sachzusammenhang bedeutet.
+            <details class="tip"><summary>Tipp</summary><p>Tippe auf einen Balken. Was bedeutet die Zahl unter dem Balken für Jonas? Was gibt die Höhe des Balkens an?</p></details>
+          </li>
+          <li><span class="op">Gib an</span>, wie viele richtige Antworten Jonas am wahrscheinlichsten hat, und <span class="op">bestimme</span> die zugehörige Wahrscheinlichkeit.
+            <details class="tip"><summary>Tipp</summary><p>Suche den höchsten Balken und tippe ihn an. Die Wahrscheinlichkeit erscheint unter dem Diagramm.</p></details>
+          </li>
+          <li>Der Test ist ab 5 richtigen Antworten bestanden. <span class="op">Beurteile</span> mithilfe des Histogramms, ob Jonas mit Raten gute Chancen hat, den Test zu bestehen. <span class="op">Beschreibe</span>, welcher Teil des Histogramms dafür entscheidend ist.
+            <details class="tip"><summary>Tipp</summary><p>Welche Balken gehören zu „bestanden“? Vergleiche ihre Höhe mit den übrigen Balken. Tippe sie an, um die Werte abzulesen.</p></details>
+          </li>
+          <li>Jeder Balken ist 1 breit. <span class="op">Begründe</span>, dass alle Balken zusammen den Flächeninhalt 1 haben.
+            <details class="tip"><summary>Tipp</summary><p>Flächeninhalt eines Balkens = Breite · Höhe. Welche Werte kann <i>X</i> überhaupt annehmen? Was ergibt also <i>P</i>(<i>X</i>&nbsp;=&nbsp;0) + <i>P</i>(<i>X</i>&nbsp;=&nbsp;1) + … + <i>P</i>(<i>X</i>&nbsp;=&nbsp;10)?</p></details>
+          </li>
         </ol>
-        <p class="note">Notiere deine Ergebnisse im Heft.</p>
       </div>
     </div>
   </section>
@@ -229,14 +265,25 @@
           ein Histogramm gestrichelt stehen, sodass du zwei Einstellungen vergleichen kannst.
         </p>
         <ol class="items">
-          <li><span class="op">Vergleiche</span> die Histogramme für <i>p</i>&nbsp;=&nbsp;0,3 und <i>p</i>&nbsp;=&nbsp;0,7 (<i>n</i>&nbsp;=&nbsp;10). <span class="op">Erkläre</span> deine Beobachtung mithilfe von Erfolg und Misserfolg.</li>
-          <li><span class="op">Nenne</span> die Besonderheit des Histogramms für <i>p</i>&nbsp;=&nbsp;0,5 und <span class="op">begründe</span> sie am Galtonbrett.</li>
-          <li>Halte <i>n</i> fest und verändere <i>p</i>. <span class="op">Beschreibe</span>, wie sich die Veränderung von <i>p</i> auf die Form des Histogramms auswirkt.</li>
-          <li>Halte <i>p</i> fest und erhöhe <i>n</i> schrittweise von 10 bis 50. <span class="op">Beschreibe</span>, wie sich die Veränderung von <i>n</i> auf Lage, Breite und Höhe des Histogramms auswirkt. <span class="op">Erkläre</span> deine Beobachtung.</li>
-          <li class="extra"><span class="op">Stelle</span> eine Vermutung <span class="op">auf</span>, bei welchem <i>k</i> der höchste Balken in Abhängigkeit von <i>n</i> und <i>p</i> liegt. <span class="op">Überprüfe</span> deine Vermutung an drei selbst gewählten Beispielen.</li>
-          <li class="extra"><span class="op">Untersuche</span> die Extremfälle <i>p</i>&nbsp;=&nbsp;0 und <i>p</i>&nbsp;=&nbsp;1. <span class="op">Erläutere</span> die Histogramme.</li>
+          <li><span class="op">Vergleiche</span> die Histogramme für <i>p</i>&nbsp;=&nbsp;0,3 und <i>p</i>&nbsp;=&nbsp;0,7 (<i>n</i>&nbsp;=&nbsp;10). <span class="op">Erkläre</span> deine Beobachtung mithilfe von Erfolg und Misserfolg.
+            <details class="tip"><summary>Tipp</summary><p>Stelle <i>p</i>&nbsp;=&nbsp;0,3 ein und tippe auf „Vergleichsbild merken“, dann stelle <i>p</i>&nbsp;=&nbsp;0,7 ein. Was passiert, wenn du bei <i>p</i>&nbsp;=&nbsp;0,7 nicht die Erfolge, sondern die Misserfolge zählst?</p></details>
+          </li>
+          <li><span class="op">Nenne</span> die Besonderheit des Histogramms für <i>p</i>&nbsp;=&nbsp;0,5 und <span class="op">begründe</span> sie am Galtonbrett.
+            <details class="tip"><summary>Tipp</summary><p>Was bedeutet <i>p</i>&nbsp;=&nbsp;0,5 für die Kugel an jedem Nagel des Galtonbretts? Vergleiche einen Weg nach links mit dem „gespiegelten“ Weg nach rechts.</p></details>
+          </li>
+          <li>Halte <i>n</i> fest und verändere <i>p</i>. <span class="op">Beschreibe</span>, wie sich die Veränderung von <i>p</i> auf die Form des Histogramms auswirkt.
+            <details class="tip"><summary>Tipp</summary><p>Probiere kleine, mittlere und große Werte für <i>p</i>. Achte darauf, wo der höchste Balken liegt und ob das Histogramm symmetrisch oder zu einer Seite „schief“ ist.</p></details>
+          </li>
+          <li>Halte <i>p</i> fest und erhöhe <i>n</i> schrittweise von 10 bis 50. <span class="op">Beschreibe</span>, wie sich die Veränderung von <i>n</i> auf Lage, Breite und Höhe des Histogramms auswirkt. <span class="op">Erkläre</span> deine Beobachtung.
+            <details class="tip"><summary>Tipp</summary><p>Merke das Histogramm für <i>n</i>&nbsp;=&nbsp;10 als Vergleichsbild und stelle dann <i>n</i>&nbsp;=&nbsp;30 und <i>n</i>&nbsp;=&nbsp;50 ein. Zum Erklären: Wenn es mehr Balken gibt, die Gesamtfläche aber gleich bleibt (Aufgabe 1 e), was folgt daraus für die Höhe? Und wie viele Erfolge erwartest du ungefähr, wenn es mehr Versuche gibt?</p></details>
+          </li>
+          <li class="extra"><span class="op">Stelle</span> eine Vermutung <span class="op">auf</span>, bei welchem <i>k</i> der höchste Balken in Abhängigkeit von <i>n</i> und <i>p</i> liegt. <span class="op">Überprüfe</span> deine Vermutung an drei selbst gewählten Beispielen.
+            <details class="tip"><summary>Tipp</summary><p>Lege eine Tabelle mit den Spalten <i>n</i>, <i>p</i> und <i>k</i> (Lage des höchsten Balkens) an. Welchen Anteil der <i>n</i> Versuche machen die Erfolge beim höchsten Balken ungefähr aus?</p></details>
+          </li>
+          <li class="extra"><span class="op">Untersuche</span> die Extremfälle <i>p</i>&nbsp;=&nbsp;0 und <i>p</i>&nbsp;=&nbsp;1. <span class="op">Erläutere</span> die Histogramme.
+            <details class="tip"><summary>Tipp</summary><p>Was bedeutet <i>p</i>&nbsp;=&nbsp;0 für jeden einzelnen Versuch? Wie viele Erfolge sind dann möglich? Balken, die über die Hochachse hinausragen, sind oben abgeschnitten (Pfeil). Tippe sie an oder schalte „Hochachse festhalten“ aus.</p></details>
+          </li>
         </ol>
-        <p class="note">Notiere deine Ergebnisse im Heft.</p>
       </div>
     </div>
   </section>
@@ -260,10 +307,13 @@
           <li>(4)&ensp;<i>n</i>&nbsp;=&nbsp;20, <i>p</i>&nbsp;=&nbsp;0,8</li>
         </ul>
         <ol class="items">
-          <li><span class="op">Ordne</span> jedem Histogramm die passende Verteilung <span class="op">zu</span>.</li>
-          <li><span class="op">Begründe</span> deine Zuordnung mithilfe von Lage, Symmetrie und Breite der Histogramme.</li>
+          <li><span class="op">Ordne</span> jedem Histogramm die passende Verteilung <span class="op">zu</span>.
+            <details class="tip"><summary>Tipp</summary><p>Beginne mit dem, was am leichtesten zu erkennen ist: Wo liegt jeweils der Gipfel? Welche Histogramme sind symmetrisch?</p></details>
+          </li>
+          <li><span class="op">Begründe</span> deine Zuordnung mithilfe von Lage, Symmetrie und Breite der Histogramme.
+            <details class="tip"><summary>Tipp</summary><p>Zwei Verteilungen haben <i>p</i>&nbsp;=&nbsp;0,5. Was haben ihre Histogramme gemeinsam, und worin unterscheiden sie sich? Denk an deine Ergebnisse aus Aufgabe 2 d).</p></details>
+          </li>
         </ol>
-        <p class="note">Notiere deine Ergebnisse im Heft.</p>
       </div>
     </div>
   </section>
@@ -284,10 +334,14 @@
           stimmen. Wähle die Diagramme über die Buchstaben aus. Durch Antippen kannst du die Höhe eines Balkens ablesen.
         </p>
         <ol class="items">
-          <li><span class="op">Beurteile</span> für jedes Diagramm, ob es ein Histogramm der angegebenen Binomialverteilung sein kann.</li>
-          <li><span class="op">Begründe</span> jeweils deine Entscheidung. Nutze deine Ergebnisse aus Aufgabe 1 und 2.</li>
+          <li><span class="op">Beurteile</span> für jedes Diagramm, ob es ein Histogramm der angegebenen Binomialverteilung sein kann.
+            <details class="tip"><summary>Tipp</summary><p>Prüfe jedes Diagramm mit dieser Checkliste: Ergeben alle Balkenhöhen zusammen 1? Hat es nur einen Gipfel? Liegt der Gipfel dort, wo er bei diesem <i>p</i> liegen müsste? Ist es symmetrisch, wenn <i>p</i>&nbsp;=&nbsp;0,5 ist?</p></details>
+          </li>
+          <li><span class="op">Begründe</span> jeweils deine Entscheidung. Nutze deine Ergebnisse aus Aufgabe 1 und 2.
+            <details class="tip"><summary>Tipp</summary><p>Ein einziger Verstoß gegen die Checkliste reicht für „kann nicht passen“. Wenn alles stimmt, kannst du nur sagen „kann passen“. Zum Addieren der Höhen tippe die Balken nacheinander an und rechne mit dem GTR.</p></details>
+          </li>
         </ol>
-        <p class="note">Lege im Heft eine Tabelle an: Diagramm | kann passen? | Begründung.</p>
+        <p class="note">Lege eine Tabelle an: Diagramm | kann passen? | Begründung.</p>
       </div>
     </div>
   </section>
@@ -305,11 +359,16 @@
         <h2><span class="nr">Aufgabe 5</span> | Welche Verteilung ist das? <span class="badge">Sprinteraufgabe</span></h2>
         <p class="intro">Das Tool zeigt das Histogramm einer Binomialverteilung. <i>n</i> und <i>p</i> sind nicht angegeben.</p>
         <ol class="items">
-          <li><span class="op">Schätze</span> <i>n</i> und <i>p</i> <span class="op">ab</span> und <span class="op">begründe</span> deine Schätzung.</li>
-          <li>Stelle deine Schätzung mit den Reglern ein und tippe auf „Vergleichen“. Deine Schätzung erscheint als Umriss. Verbessere sie, bis beide Histogramme übereinstimmen.</li>
-          <li>Tippe auf „Neues Histogramm“ und wiederhole a) und b) zweimal. <span class="op">Beschreibe</span>, wie du beim Schätzen von <i>n</i> und <i>p</i> vorgegangen bist.</li>
+          <li><span class="op">Schätze</span> <i>n</i> und <i>p</i> <span class="op">ab</span> und <span class="op">begründe</span> deine Schätzung.
+            <details class="tip"><summary>Tipp</summary><p>Schau zuerst, wo der Gipfel liegt, dann, wie breit das Histogramm ist. Nutze deine Vermutung aus Aufgabe 2 e).</p></details>
+          </li>
+          <li>Stelle deine Schätzung mit den Reglern ein und tippe auf „Vergleichen“. Deine Schätzung erscheint als Umriss. Verbessere sie, bis beide Histogramme übereinstimmen.
+            <details class="tip"><summary>Tipp</summary><p>Ändere immer nur einen Regler. Wie verändert sich der Umriss, wenn du <i>p</i> änderst, und wie, wenn du <i>n</i> änderst? Bringe zuerst die Gipfel übereinander, dann stimme die Breite ab.</p></details>
+          </li>
+          <li>Tippe auf „Neues Histogramm“ und wiederhole a) und b) zweimal. <span class="op">Beschreibe</span>, wie du beim Schätzen von <i>n</i> und <i>p</i> vorgegangen bist.
+            <details class="tip"><summary>Tipp</summary><p>Beschreibe die Reihenfolge deiner Schritte: Woran hast du <i>p</i> erkannt, woran <i>n</i>?</p></details>
+          </li>
         </ol>
-        <p class="note">Notiere deine Ergebnisse im Heft.</p>
       </div>
     </div>
   </section>
