@@ -68,7 +68,7 @@ Höhe ablesen. Im Tool sind die Balken zur besseren Lesbarkeit etwas schmaler ge
 ## Arbeitsaufträge
 
 Stehen auf der Erarbeitungsseite `binomialverteilung-erarbeitung.html` (Aufgabe n gehört zu Teil n des Tools).
-A2 e) und f) sind Sprinteraufgaben.
+A2 e) und f) sowie die ganze A5 sind Sprinteraufgaben.
 Das Tool ist dort bei jeder Aufgabe eingebettet (`binomialverteilung.html?eingebettet#…`, ohne Titel und Reiter).
 Breiter Bildschirm (iPad quer): Aufgaben links, Tool rechts und mitlaufend. Schmal (hochkant): Tool oben, Aufgaben darunter.
 
