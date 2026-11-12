@@ -34,7 +34,8 @@ Aufbau des Repos: siehe `README.md`.
   Muss doch etwas verschoben werden, eine Weiterleitungsseite unter der alten Adresse anlegen.
 - Das Repo ist **öffentlich**: keine Schülerdaten, keine Noten, kein fremdes Material
   (Schulbuchseiten, Verlagsabbildungen). Lösungen, die Schüler:innen nicht vorab finden sollen,
-  gehören nicht ins Repo (z. B. Erwartungshorizonte).
+  gehören nicht ins Repo (z. B. Erwartungshorizonte). Ausnahme: Lösungskontrollen in interaktiven
+  Seiten (siehe unten), deren Lösungen im Quelltext stehen.
 
 ## Interaktive Materialien (Animationen, Simulationen)
 
@@ -44,6 +45,9 @@ Aufbau des Repos: siehe `README.md`.
 - **Nicht überfrachten:** nur die Bedienelemente, die der Arbeitsauftrag braucht.
 - **Keine Lösungstexte in der Animation.** Erklärungen und Aufgaben stehen auf dem Arbeitsblatt
   oder auf der Erarbeitungsseite, nie im Tool selbst.
+  Ausnahme **Lösungskontrollen**, wenn Kai sie für eine Aufgabe will: Die S antworten zuerst,
+  dann gibt es ✓/✗ (ohne die richtige Antwort zu verraten); eine Begründung oder Auflösung erst danach
+  oder nach einer Wartezeit. Die Lösungen dafür dürfen im Quelltext der Seite stehen.
   Auf dem Bildschirm nur neutrale Beschriftungen (z. B. „Stoffebene“, „Teilchenebene“, „fest“).
 - Mehrere Teile einer Animation über Reiter, jeder Teil direkt verlinkbar über einen Hash-Anker
   (z. B. `#zustaende`), damit das AB pro Aufgabe einen eigenen QR-Code haben kann.
