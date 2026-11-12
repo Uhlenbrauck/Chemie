@@ -85,7 +85,23 @@
     grid-template-rows: 1fr 1fr;
   }
 
-  #grid4 svg { width: 100%; height: 100%; display: block; }
+  #grid4 .cell { position: relative; min-width: 0; min-height: 0; }
+  #grid4 svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .pick { position: absolute; top: 6px; right: 10px; display: flex; gap: 4px; z-index: 1; }
+  .pick .btn { min-width: 44px; min-height: 44px; padding: 0 8px; font-size: 16px; border-radius: 12px; }
+  .mark { position: absolute; top: 2px; left: 38px; font-size: 28px; font-weight: 700; z-index: 1; }
+  .ok  { color: #2e7d32; }
+  .bad { color: #c62828; }
+  .status { font-size: 19px; font-weight: 600; text-align: center; }
+  .whybox {
+    max-width: 760px;
+    padding: 10px 14px;
+    background: #e8f0eb;
+    border-radius: 8px;
+    font-size: 17px;
+    line-height: 1.4;
+  }
+  .whybox i { font-family: "Times New Roman", Times, serif; font-size: 1.1em; }
 
   .controls {
     padding: 8px 16px calc(14px + env(safe-area-inset-bottom));
@@ -264,10 +280,10 @@
 <div id="stage">
   <svg id="chart" xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm"></svg>
   <div id="grid4" hidden>
-    <svg xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm A"></svg>
-    <svg xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm B"></svg>
-    <svg xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm C"></svg>
-    <svg xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm D"></svg>
+    <div class="cell"><div class="pick" data-i="0"></div><span class="mark" id="mark3_0"></span><svg xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm A"></svg></div>
+    <div class="cell"><div class="pick" data-i="1"></div><span class="mark" id="mark3_1"></span><svg xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm B"></svg></div>
+    <div class="cell"><div class="pick" data-i="2"></div><span class="mark" id="mark3_2"></span><svg xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm C"></svg></div>
+    <div class="cell"><div class="pick" data-i="3"></div><span class="mark" id="mark3_3"></span><svg xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm D"></svg></div>
   </div>
 </div>
 
@@ -293,11 +309,23 @@
     <button class="btn" id="btnGhost">Vergleichsbild merken</button>
     <button class="btn" id="btnGhostClear" disabled>Vergleichsbild löschen</button>
   </div>
+  <div class="row buttons" id="rowButtons3" hidden>
+    <button class="btn" id="btnCheck3">Prüfen</button>
+  </div>
+  <div class="row buttons" id="rowAnswer4" hidden>
+    <button class="btn" id="ans4yes" aria-pressed="false">kann passen</button>
+    <button class="btn" id="ans4no" aria-pressed="false">kann nicht passen</button>
+    <button class="btn" id="btnCheck4" disabled>Prüfen</button>
+    <button class="btn" id="btnWhy4" aria-pressed="false" hidden>Begründung vergleichen</button>
+  </div>
   <div class="row buttons" id="rowButtons5" hidden>
     <button class="btn" id="btnCompare" aria-pressed="false">Vergleichen</button>
     <button class="btn" id="btnNew">Neues Histogramm</button>
+    <button class="btn" id="btnSolve" hidden>Auflösen</button>
   </div>
   <div class="row value" id="valueRow"></div>
+  <div class="row buttons status" id="statusRow" hidden></div>
+  <div class="whybox" id="why4" hidden></div>
 </div>
 
 <script>
@@ -359,6 +387,9 @@ const PART3 = [
   { n: 20, p: 0.5 },   // D
 ];
 const PART3_KMAX = 40, PART3_YMAX = 0.25;
+// Lösung: Nummer der Verteilung auf der Erarbeitungsseite
+// (1) n = 20, p = 0,5   (2) n = 20, p = 0,2   (3) n = 40, p = 0,5   (4) n = 20, p = 0,8
+const PART3_KEY = [4, 3, 2, 1];
 
 /* ── Teil 4: Diagramme mit angegebener Verteilung; nicht alle passen dazu ── */
 function mix(a, b, w) { return a.map((x, k) => w * x + (1 - w) * b[k]); }
@@ -371,6 +402,15 @@ const PART4 = [
   { n: 10, p: 0.2, values: binom(10, 0.7) },                           // F: Gipfel auf der falschen Seite
 ];
 const LETTERS = 'ABCDEF';
+// Lösung zu Teil 4: kann passen? und Begründung (erscheint nach richtiger Entscheidung)
+const PART4_KEY = [
+  { ok: false, why: 'Die Balkenhöhen ergeben zusammen 1,25 und nicht 1. Die Gesamtfläche eines Histogramms einer Wahrscheinlichkeitsverteilung ist immer 1.' },
+  { ok: true,  why: 'Alles passt: Die Höhen ergeben zusammen 1, es gibt nur einen Gipfel, und er liegt bei <i>k</i> = 3, also links, wie es zu <i>p</i> = 0,3 passt.' },
+  { ok: false, why: 'Für <i>p</i> = 0,5 müsste das Histogramm symmetrisch zu <i>k</i> = 5 sein. Hier liegt der Gipfel bei <i>k</i> = 4, und links ist es höher als rechts.' },
+  { ok: true,  why: 'Alles passt: Die Höhen ergeben zusammen 1, es gibt nur einen Gipfel, und er liegt bei <i>k</i> = 12, also rechts, wie es zu <i>p</i> = 0,8 passt.' },
+  { ok: false, why: 'Das Diagramm hat zwei getrennte Gipfel. Ein Histogramm einer Binomialverteilung steigt bis zu einem Gipfel an und fällt danach ab.' },
+  { ok: false, why: 'Bei <i>p</i> = 0,2 sind Erfolge selten, der Gipfel müsste links bei kleinem <i>k</i> liegen. Hier liegt er bei <i>k</i> = 7.' },
+];
 
 /* ── Zustand ── */
 const state = {
@@ -379,9 +419,11 @@ const state = {
   // Teil 2
   n2: 10, p2: 0.5, fixK: true, fixY: true, ghost: null,
   // Teil 4
-  d4: 0,
+  d4: 0, ans4: Array(6).fill(null), res4: Array(6).fill(null), why4: false,
+  // Teil 3
+  ans3: Array(4).fill(null), res3: Array(4).fill(null), checked3: false,
   // Teil 5
-  n5: 25, p5: 0.5, target: null, compare: false,
+  n5: 25, p5: 0.5, target: null, compare: false, solved5: false, timer5: null,
 };
 
 function newTarget() {
@@ -395,6 +437,10 @@ function newTarget() {
   state.target = { n, p };
   state.compare = false;
   state.sel[5] = null;
+  state.solved5 = false;
+  clearTimeout(state.timer5); state.timer5 = null;
+  const solve = document.getElementById('btnSolve');
+  if (solve) solve.hidden = true;
 }
 
 /* ── Zeichnen ── */
@@ -423,7 +469,7 @@ function drawHist(svg, opts) {
   const yMax = opts.yMax ?? niceMax(dataMax);
   const yStep = niceStep(yMax, opts.small || H < 360 ? 4 : 6);
 
-  const m = opts.small ? { l: 48, r: 16, t: 36, b: 42 } : { l: 64, r: 18, t: 40, b: 50 };
+  const m = opts.small ? { l: 48, r: 16, t: 58, b: 42 } : { l: 64, r: 18, t: 40, b: 50 };
   const pw = W - m.l - m.r, ph = H - m.t - m.b;
   const slot = pw / (kMax + 1);
   const barW = Math.max(1, slot * (kMax > 30 ? 0.86 : 0.8));
@@ -514,7 +560,7 @@ function draw() {
   grid4.hidden = part !== 3;
 
   if (part === 3) {
-    [...grid4.children].forEach((s, i) => {
+    [...grid4.querySelectorAll('svg')].forEach((s, i) => {
       const d = PART3[i];
       drawHist(s, {
         values: binom(d.n, d.p), kMax: PART3_KMAX, yMax: PART3_YMAX, small: true,
@@ -522,6 +568,7 @@ function draw() {
       });
     });
     geom = null; shownValues = null;
+    drawStatus();
     return;
   }
 
@@ -552,12 +599,55 @@ function draw() {
       values: shownValues, sel: state.sel[5], outlineSel: true,
       kMax: CFG.part2NMax, yMax: CFG.fixedYMax,
       overlays: state.compare ? [{ values: binom(state.n5, state.p5), cls: 'guess' }] : [],
-      title: CFG.showSolutions ? `gesucht: ${np(t.n, t.p)}` : null,
+      title: CFG.showSolutions || state.solved5 ? `gesucht: ${np(t.n, t.p)}` : null,
       subtitle: state.compare ? `Schätzung (Umriss): ${np(state.n5, state.p5)}` : null,
     };
   }
   geom = drawHist(svg, opts);
   updateValue();
+  drawStatus();
+}
+
+/* ── Lösungskontrollen (Teil 3, 4, 5) ── */
+function drawStatus() {
+  const row = $('statusRow');
+  let html = '';
+  if (state.part === 3) {
+    document.querySelectorAll('.pick').forEach(pk => {
+      const i = +pk.dataset.i;
+      [...pk.children].forEach((b, j) => b.setAttribute('aria-pressed', state.ans3[i] === j + 1));
+      const m = $('mark3_' + i);
+      m.textContent = state.res3[i] === null ? '' : state.res3[i] ? '✓' : '✗';
+      m.className = 'mark ' + (state.res3[i] ? 'ok' : 'bad');
+    });
+    if (state.checked3) {
+      const right = state.res3.filter(x => x).length;
+      html = right === 4 ? '<span class="ok">✓ Alle vier richtig zugeordnet.</span>'
+                         : `${right} von 4 richtig. Überprüfe die mit ✗ markierten Histogramme.`;
+    }
+  } else if (state.part === 4) {
+    const i = state.d4, a = state.ans4[i], r = state.res4[i];
+    $('ans4yes').setAttribute('aria-pressed', a === true);
+    $('ans4no').setAttribute('aria-pressed', a === false);
+    $('btnCheck4').disabled = a === null;
+    $('btnWhy4').hidden = r !== true;
+    $('btnWhy4').setAttribute('aria-pressed', state.why4);
+    $('why4').hidden = !(r === true && state.why4);
+    $('why4').innerHTML = PART4_KEY[i].why;
+    [...$('rowLetters').children].forEach((b, j) => {
+      b.textContent = LETTERS[j] + (state.res4[j] === null ? '' : state.res4[j] ? ' ✓' : ' ✗');
+    });
+    if (r === true) html = '<span class="ok">✓ Richtig entschieden.</span>';
+    else if (r === false) html = '<span class="bad">✗ Noch nicht richtig.</span> Geh die Checkliste aus dem Tipp noch einmal durch.';
+  } else if (state.part === 5) {
+    const t = state.target;
+    if (state.solved5) html = `Gesucht war <i>n</i>&nbsp;=&nbsp;${t.n}, <i>p</i>&nbsp;=&nbsp;${fmt(t.p, 2)}.`;
+    else if (state.compare && state.n5 === t.n && Math.round(state.p5 * 100) === Math.round(t.p * 100))
+      html = '<span class="ok">✓ Genau getroffen!</span>';
+  }
+  row.innerHTML = html ? `<span>${html}</span>` : '';
+  row.hidden = !html;
+  if (state.part !== 4) $('why4').hidden = true;
 }
 
 function updateValue() {
@@ -615,7 +705,8 @@ function showPart(k) {
   $('rowButtons5').hidden = k !== 5;
   $('rowLetters').hidden = k !== 4;
   $('valueRow').hidden = k === 3;
-  document.querySelector('.controls').hidden = k === 3;
+  $('rowButtons3').hidden = k !== 3;
+  $('rowAnswer4').hidden = k !== 4;
   if (location.hash !== HASHES[k]) history.replaceState(null, '', HASHES[k]);
   if (k === 2 || k === 5) { const [n, p] = getNP(); setNP(n, p); } else draw();
 }
@@ -645,8 +736,47 @@ $('btnGhostClear').addEventListener('click', () => {
 });
 
 $('btnCompare').addEventListener('click', () => {
-  state.compare = !state.compare; $('btnCompare').setAttribute('aria-pressed', state.compare); draw();
+  state.compare = !state.compare; $('btnCompare').setAttribute('aria-pressed', state.compare);
+  // „Auflösen“ erscheint zwei Minuten nach dem ersten Vergleichen
+  if (state.compare && !state.timer5 && !state.solved5)
+    state.timer5 = setTimeout(() => { $('btnSolve').hidden = false; }, 120000);
+  draw();
 });
+$('btnSolve').addEventListener('click', () => { state.solved5 = true; $('btnSolve').hidden = true; draw(); });
+
+// Teil 3: Auswahl (1)–(4) je Histogramm
+document.querySelectorAll('.pick').forEach(pk => {
+  const i = +pk.dataset.i;
+  for (let j = 1; j <= 4; j++) {
+    const b = document.createElement('button');
+    b.className = 'btn'; b.textContent = `(${j})`;
+    b.setAttribute('aria-label', `Histogramm ${LETTERS[i]}: Verteilung ${j}`);
+    b.addEventListener('click', () => {
+      state.ans3[i] = state.ans3[i] === j ? null : j;
+      state.res3[i] = null; state.checked3 = false; draw();
+    });
+    pk.appendChild(b);
+  }
+});
+$('btnCheck3').addEventListener('click', () => {
+  state.res3 = state.ans3.map((a, i) => a === null ? false : a === PART3_KEY[i]);
+  state.checked3 = true; draw();
+});
+
+// Teil 4: kann passen / kann nicht passen
+function answer4(v) {
+  const i = state.d4;
+  state.ans4[i] = state.ans4[i] === v ? null : v;
+  state.res4[i] = null; state.why4 = false; draw();
+}
+$('ans4yes').addEventListener('click', () => answer4(true));
+$('ans4no').addEventListener('click', () => answer4(false));
+$('btnCheck4').addEventListener('click', () => {
+  const i = state.d4;
+  if (state.ans4[i] === null) return;
+  state.res4[i] = state.ans4[i] === PART4_KEY[i].ok; state.why4 = false; draw();
+});
+$('btnWhy4').addEventListener('click', () => { state.why4 = !state.why4; draw(); });
 $('btnNew').addEventListener('click', () => {
   newTarget(); $('btnCompare').setAttribute('aria-pressed', false); draw();
 });
@@ -658,7 +788,7 @@ PART4.forEach((d, i) => {
   b.textContent = LETTERS[i];
   b.setAttribute('aria-pressed', i === 0);
   b.addEventListener('click', () => {
-    state.d4 = i; state.sel[4] = null;
+    state.d4 = i; state.sel[4] = null; state.why4 = false;
     [...$('rowLetters').children].forEach((c, j) => c.setAttribute('aria-pressed', j === i));
     draw();
   });

@@ -44,17 +44,22 @@ P(X = 3) ≈ 0,2503, P(X ≥ 5) ≈ 0,078.
 - Kein Erwartungswert, keine Standardabweichung (noch nicht eingeführt).
 
 **Teil 3 – Zuordnen:** vier Histogramme A–D mit gleichen Achsen (k bis 40, Hochachse bis 0,25),
-ohne Parameter. Die vier Verteilungen stehen auf der Erarbeitungsseite. Zuordnung steht nur im
-Quelltext und im Lehrermodus.
+ohne Parameter. Die vier Verteilungen stehen auf der Erarbeitungsseite.
+**Lösungskontrolle:** Über jedem Histogramm Knöpfe (1)–(4), „Prüfen“ markiert jedes Histogramm mit ✓/✗
+und zeigt „x von 4 richtig“. Die richtige Zuordnung wird nicht angezeigt (Quelltext: `PART3_KEY`).
 
 **Teil 4 – Prüfen:** sechs Diagramme A–F mit angegebener Verteilung, Auswahl über Buchstaben,
 Antippen zeigt die Balkenhöhe. Zwei passen, vier nicht (je ein anderer Fehler: Summe der Höhen,
-Symmetrie, Anzahl der Gipfel, Lage des Gipfels). Die Auflösung steht nicht im Repo.
+Symmetrie, Anzahl der Gipfel, Lage des Gipfels).
+**Lösungskontrolle:** Die S wählen „kann passen“ / „kann nicht passen“ und tippen auf „Prüfen“ (✓/✗,
+auch an den Buchstaben). Nach einem ✓ lässt sich mit „Begründung vergleichen“ die Begründung aufklappen.
+Lösung und Begründungen stehen im Quelltext (`PART4_KEY`).
 
 **Teil 5 – Schätzen:** zufällige Binomialverteilung mit n zwischen 10 und 40, p zwischen 0,10 und 0,90
 in Schritten von 0,05 (nur Verteilungen mit allen Balken unter 0,3), Achsen fest wie in Teil 2.
 Die Regler stellen die Schätzung ein, „Vergleichen“ legt sie als orangen Umriss darüber,
-„Neues Histogramm“ würfelt neu. Fachlich: n ist am Histogramm nicht direkt ablesbar (die Balken
+„Neues Histogramm“ würfelt neu. Bei genauem Treffer erscheint „✓ Genau getroffen!“.
+Zwei Minuten nach dem ersten „Vergleichen“ erscheint „Auflösen“ (zeigt n und p). Fachlich: n ist am Histogramm nicht direkt ablesbar (die Balken
 am rechten Rand sind praktisch 0), sondern nur über Lage und Breite zusammen mit p.
 
 **Lehrermodus (`?lehrer`):** n und p für Teil 1, kleinstes und größtes n am Regler (bis 100),
@@ -74,4 +79,5 @@ Kein Hinweis „im Heft notieren“: Die meisten arbeiten am iPad, und Q2 weiß,
 Das Tool ist dort bei jeder Aufgabe eingebettet (`binomialverteilung.html?eingebettet#…`, ohne Titel und Reiter).
 Breiter Bildschirm (iPad quer): Aufgaben links, Tool rechts und mitlaufend. Schmal (hochkant): Tool oben, Aufgaben darunter.
 
-Lösungen gehören nicht ins Repo.
+A3 b) und A5 c) haben zusätzlich eine aufklappbare Checkliste für die Begründung.
+Lösungen dürfen hier im Quelltext stehen (Absprache mit Kai).
