@@ -69,6 +69,8 @@ Höhe ablesen. Im Tool sind die Balken zur besseren Lesbarkeit etwas schmaler ge
 
 Stehen auf der Erarbeitungsseite `binomialverteilung-erarbeitung.html` (Aufgabe n gehört zu Teil n des Tools).
 A2 e) und f) sowie die ganze A5 sind Sprinteraufgaben.
+Zu jeder Teilaufgabe gibt es einen aufklappbaren Tipp (Denkanstoß, keine Lösung), damit die S selbstständig arbeiten können.
+Kein Hinweis „im Heft notieren“: Die meisten arbeiten am iPad, und Q2 weiß, dass Ergebnisse notiert werden.
 Das Tool ist dort bei jeder Aufgabe eingebettet (`binomialverteilung.html?eingebettet#…`, ohne Titel und Reiter).
 Breiter Bildschirm (iPad quer): Aufgaben links, Tool rechts und mitlaufend. Schmal (hochkant): Tool oben, Aufgaben darunter.
 
