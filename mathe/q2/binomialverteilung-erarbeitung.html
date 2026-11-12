@@ -41,6 +41,7 @@
     top: 0;
     z-index: 5;
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     padding: 8px 20px;
     background: var(--bg);
@@ -63,6 +64,7 @@
   main { max-width: 1400px; margin: 0 auto; padding: 16px 20px 60px; }
 
   section { margin-bottom: 40px; scroll-margin-top: 70px; }
+  .verteilungen { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; margin: 0 0 12px; }
 
   /* Breit: Aufgaben links, Tool rechts und mitlaufend. Schmal: Tool oben, Aufgaben darunter. */
   .work {
@@ -109,7 +111,7 @@
     color: var(--accent);
   }
   ol.items > li.extra::after {
-    content: "für Schnelle";
+    content: "Sprinteraufgabe";
     display: inline-block;
     margin-left: 8px;
     font-size: 12px;
@@ -141,7 +143,9 @@
 
   iframe { display: block; width: 100%; border: 0; }
   #t1 iframe { height: clamp(380px, 62vh, 620px); }
-  #t2 iframe { height: clamp(520px, calc(100vh - 110px), 900px); }
+  #t2 iframe, #t5 iframe { height: clamp(520px, calc(100vh - 110px), 900px); }
+  #t3 iframe { height: clamp(420px, calc(100vh - 140px), 760px); }
+  #t4 iframe { height: clamp(460px, calc(100vh - 120px), 800px); }
 
   .open {
     display: inline-block;
@@ -161,6 +165,9 @@
 <nav aria-label="Aufgaben">
   <a href="#aufgabe1">Aufgabe 1</a>
   <a href="#aufgabe2">Aufgabe 2</a>
+  <a href="#aufgabe3">Aufgabe 3</a>
+  <a href="#aufgabe4">Aufgabe 4</a>
+  <a href="#aufgabe5">Aufgabe 5</a>
 </nav>
 
 <main>
@@ -177,19 +184,17 @@
       <div class="tasks card">
         <h2><span class="nr">Aufgabe 1</span> | Was zeigt ein Histogramm?</h2>
         <p class="intro">
-          Das Tool zeigt die Binomialverteilung mit <i>n</i>&nbsp;=&nbsp;10 und <i>p</i>&nbsp;=&nbsp;0,2 aus AB 36
-          als <strong>Histogramm</strong>. Tippe auf die Balken.
+          Ein Multiple-Choice-Test besteht aus 10 Fragen mit jeweils 4 Antwortmöglichkeiten, von denen
+          genau eine richtig ist. Jonas hat nicht gelernt und kreuzt bei jeder Frage zufällig eine Antwort an.
+          Die Zufallsgröße <i>X</i> gibt die Anzahl seiner richtigen Antworten an.
         </p>
+        <p class="intro">Das Tool zeigt die Wahrscheinlichkeitsverteilung von <i>X</i> als <strong>Histogramm</strong>. Tippe auf die Balken.</p>
         <ol class="items">
-          <li><span class="op">Beschreibe</span>, was auf der Rechtsachse und was auf der Hochachse
-              abgetragen ist und was ein einzelner Balken darstellt.</li>
-          <li><span class="op">Gib an</span>, welchen Wert die Zufallsgröße <i>X</i> am wahrscheinlichsten
-              annimmt. <span class="op">Vergleiche</span> mit deiner GTR-Tabelle aus AB 36.</li>
-          <li><span class="op">Bestimme</span> <i>P</i>(<i>X</i> ≤ 2) mithilfe des Histogramms.
-              <span class="op">Erläutere</span>, wie man diese Wahrscheinlichkeit im Histogramm „sieht“.</li>
-          <li><span class="op">Begründe</span>, warum die Höhen aller Balken zusammen 1 ergeben.</li>
-          <li><span class="op">Deute</span> das Histogramm am Galtonbrett: Was bedeuten <i>n</i>, <i>p</i>
-              und <i>k</i>, was bedeutet die Höhe eines Balkens?</li>
+          <li><span class="op">Begründe</span>, dass <i>X</i> binomialverteilt ist, und <span class="op">gib</span> <i>n</i> und <i>p</i> <span class="op">an</span>.</li>
+          <li><span class="op">Erläutere</span>, was ein einzelner Balken im Sachzusammenhang bedeutet.</li>
+          <li><span class="op">Gib an</span>, wie viele richtige Antworten Jonas am wahrscheinlichsten hat, und <span class="op">bestimme</span> die zugehörige Wahrscheinlichkeit.</li>
+          <li>Der Test ist ab 5 richtigen Antworten bestanden. <span class="op">Beurteile</span> mithilfe des Histogramms, ob Jonas mit Raten gute Chancen hat, den Test zu bestehen. <span class="op">Beschreibe</span>, welcher Teil des Histogramms dafür entscheidend ist.</li>
+          <li>Jeder Balken ist 1 breit. <span class="op">Begründe</span>, dass alle Balken zusammen den Flächeninhalt 1 haben.</li>
         </ol>
         <p class="note">Notiere deine Ergebnisse im Heft.</p>
       </div>
@@ -208,25 +213,90 @@
       <div class="tasks card">
         <h2><span class="nr">Aufgabe 2</span> | Wie hängt die Gestalt von <i>n</i> und <i>p</i> ab?</h2>
         <p class="intro">
-          Mit den Reglern stellst du <i>n</i> und <i>p</i> ein. Mit „Vergleichsbild merken“ bleibt ein
-          Histogramm gestrichelt stehen, sodass du zwei Einstellungen vergleichen kannst.
+          Mit den Reglern stellst du <i>n</i> und <i>p</i> ein. „k-Achse festhalten“ und „Hochachse festhalten“
+          sorgen dafür, dass sich die Achsen beim Verändern nicht mitbewegen. Mit „Vergleichsbild merken“ bleibt
+          ein Histogramm gestrichelt stehen, sodass du zwei Einstellungen vergleichen kannst.
         </p>
         <ol class="items">
-          <li>Stelle <i>n</i>&nbsp;=&nbsp;10 ein und verändere <i>p</i>. <span class="op">Beschreibe</span>, wie sich
-              die Lage des höchsten Balkens verändert.</li>
-          <li><span class="op">Vergleiche</span> die Histogramme für <i>p</i>&nbsp;=&nbsp;0,3 und <i>p</i>&nbsp;=&nbsp;0,7
-              (<i>n</i>&nbsp;=&nbsp;10). <span class="op">Erkläre</span> deine Beobachtung mithilfe von Erfolg und Misserfolg.</li>
-          <li><span class="op">Nenne</span> die Besonderheit des Histogramms für <i>p</i>&nbsp;=&nbsp;0,5 und
-              <span class="op">begründe</span> sie am Galtonbrett.</li>
-          <li>Stelle <i>p</i>&nbsp;=&nbsp;0,3 ein und erhöhe <i>n</i> schrittweise von 10 bis 50.
-              <span class="op">Beschreibe</span>, wie sich Lage, Breite und Höhe des Histogramms verändern.</li>
-          <li><span class="op">Erkläre</span>, warum das Histogramm mit wachsendem <i>n</i> flacher werden muss.
-              <span class="tipp">Tipp: Aufgabe 1 d).</span></li>
-          <li><span class="op">Stelle</span> eine Vermutung <span class="op">auf</span>, bei welchem <i>k</i>
-              der höchste Balken in Abhängigkeit von <i>n</i> und <i>p</i> liegt.
-              <span class="op">Überprüfe</span> deine Vermutung an drei selbst gewählten Beispielen.</li>
-          <li class="extra"><span class="op">Untersuche</span> die Extremfälle <i>p</i>&nbsp;=&nbsp;0 und <i>p</i>&nbsp;=&nbsp;1.
-              <span class="op">Erläutere</span> die Histogramme.</li>
+          <li><span class="op">Vergleiche</span> die Histogramme für <i>p</i>&nbsp;=&nbsp;0,3 und <i>p</i>&nbsp;=&nbsp;0,7 (<i>n</i>&nbsp;=&nbsp;10). <span class="op">Erkläre</span> deine Beobachtung mithilfe von Erfolg und Misserfolg.</li>
+          <li><span class="op">Nenne</span> die Besonderheit des Histogramms für <i>p</i>&nbsp;=&nbsp;0,5 und <span class="op">begründe</span> sie am Galtonbrett.</li>
+          <li>Halte <i>n</i> fest und verändere <i>p</i>. <span class="op">Beschreibe</span>, wie sich die Veränderung von <i>p</i> auf die Form des Histogramms auswirkt.</li>
+          <li>Halte <i>p</i> fest und erhöhe <i>n</i> schrittweise von 10 bis 50. <span class="op">Beschreibe</span>, wie sich die Veränderung von <i>n</i> auf Lage, Breite und Höhe des Histogramms auswirkt. <span class="op">Erkläre</span> deine Beobachtung.</li>
+          <li class="extra"><span class="op">Stelle</span> eine Vermutung <span class="op">auf</span>, bei welchem <i>k</i> der höchste Balken in Abhängigkeit von <i>n</i> und <i>p</i> liegt. <span class="op">Überprüfe</span> deine Vermutung an drei selbst gewählten Beispielen.</li>
+          <li class="extra"><span class="op">Untersuche</span> die Extremfälle <i>p</i>&nbsp;=&nbsp;0 und <i>p</i>&nbsp;=&nbsp;1. <span class="op">Erläutere</span> die Histogramme.</li>
+        </ol>
+        <p class="note">Notiere deine Ergebnisse im Heft.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="aufgabe3">
+    <div class="work">
+      <div class="tool" id="t3">
+        <div class="frame">
+          <iframe src="binomialverteilung.html?eingebettet#zuordnen" title="Histogramme zuordnen"></iframe>
+        </div>
+        <a class="open" href="binomialverteilung.html#zuordnen" target="_blank">Tool in eigenem Fenster öffnen</a>
+      </div>
+
+      <div class="tasks card">
+        <h2><span class="nr">Aufgabe 3</span> | Welches Histogramm gehört wozu?</h2>
+        <p class="intro">Das Tool zeigt vier Histogramme A bis D mit gleichen Achsen. Sie gehören zu diesen Binomialverteilungen:</p>
+        <ul class="verteilungen">
+          <li>(1)&ensp;<i>n</i>&nbsp;=&nbsp;20, <i>p</i>&nbsp;=&nbsp;0,5</li>
+          <li>(2)&ensp;<i>n</i>&nbsp;=&nbsp;20, <i>p</i>&nbsp;=&nbsp;0,2</li>
+          <li>(3)&ensp;<i>n</i>&nbsp;=&nbsp;40, <i>p</i>&nbsp;=&nbsp;0,5</li>
+          <li>(4)&ensp;<i>n</i>&nbsp;=&nbsp;20, <i>p</i>&nbsp;=&nbsp;0,8</li>
+        </ul>
+        <ol class="items">
+          <li><span class="op">Ordne</span> jedem Histogramm die passende Verteilung <span class="op">zu</span>.</li>
+          <li><span class="op">Begründe</span> deine Zuordnung mithilfe von Lage, Symmetrie und Breite der Histogramme.</li>
+        </ol>
+        <p class="note">Notiere deine Ergebnisse im Heft.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="aufgabe4">
+    <div class="work">
+      <div class="tool" id="t4">
+        <div class="frame">
+          <iframe src="binomialverteilung.html?eingebettet#pruefen" title="Diagramme prüfen"></iframe>
+        </div>
+        <a class="open" href="binomialverteilung.html#pruefen" target="_blank">Tool in eigenem Fenster öffnen</a>
+      </div>
+
+      <div class="tasks card">
+        <h2><span class="nr">Aufgabe 4</span> | Kann das ein Histogramm einer Binomialverteilung sein?</h2>
+        <p class="intro">
+          Zu jedem Diagramm A bis F ist angegeben, zu welcher Binomialverteilung es gehören soll. Nicht alle Angaben
+          stimmen. Wähle die Diagramme über die Buchstaben aus. Durch Antippen kannst du die Höhe eines Balkens ablesen.
+        </p>
+        <ol class="items">
+          <li><span class="op">Beurteile</span> für jedes Diagramm, ob es ein Histogramm der angegebenen Binomialverteilung sein kann.</li>
+          <li><span class="op">Begründe</span> jeweils deine Entscheidung. Nutze deine Ergebnisse aus Aufgabe 1 und 2.</li>
+        </ol>
+        <p class="note">Lege im Heft eine Tabelle an: Diagramm | kann passen? | Begründung.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="aufgabe5">
+    <div class="work">
+      <div class="tool" id="t5">
+        <div class="frame">
+          <iframe src="binomialverteilung.html?eingebettet#schaetzen" title="Verteilung schätzen"></iframe>
+        </div>
+        <a class="open" href="binomialverteilung.html#schaetzen" target="_blank">Tool in eigenem Fenster öffnen</a>
+      </div>
+
+      <div class="tasks card">
+        <h2><span class="nr">Aufgabe 5</span> | Welche Verteilung ist das?</h2>
+        <p class="intro">Das Tool zeigt das Histogramm einer Binomialverteilung. <i>n</i> und <i>p</i> sind nicht angegeben.</p>
+        <ol class="items">
+          <li><span class="op">Schätze</span> <i>n</i> und <i>p</i> <span class="op">ab</span> und <span class="op">begründe</span> deine Schätzung.</li>
+          <li>Stelle deine Schätzung mit den Reglern ein und tippe auf „Vergleichen“. Deine Schätzung erscheint als Umriss. Verbessere sie, bis beide Histogramme übereinstimmen.</li>
+          <li>Tippe auf „Neues Histogramm“ und wiederhole a) und b) zweimal. <span class="op">Beschreibe</span>, wie du beim Schätzen von <i>n</i> und <i>p</i> vorgegangen bist.</li>
         </ol>
         <p class="note">Notiere deine Ergebnisse im Heft.</p>
       </div>

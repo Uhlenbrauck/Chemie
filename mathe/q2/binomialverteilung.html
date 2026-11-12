@@ -15,8 +15,7 @@
     --muted:     #6b6960;
     --accent:    #2d5a3d;
     --bar:       #3b6fb6;
-    --bar-sel:   #e07b1a;
-    --bar-max:   #e07b1a;
+    --hi:        #e07b1a;
     --grid:      #e6e3da;
   }
 
@@ -38,7 +37,7 @@
     padding: 10px 16px 0;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px 16px;
     flex-wrap: wrap;
   }
 
@@ -46,13 +45,14 @@
 
   .tabs {
     display: inline-flex;
+    flex-wrap: wrap;
     border: 2px solid var(--border);
     border-radius: 22px;
     overflow: hidden;
     background: var(--surface);
   }
 
-  .tabs .btn { border: none; border-radius: 0; }
+  .tabs .btn { border: none; border-radius: 0; padding: 0 16px; }
 
   /* Eingebettet in die Erarbeitungsseite (?eingebettet): ohne Titel und Reiter */
   body.embedded header { display: none; }
@@ -77,6 +77,16 @@
     touch-action: none;
   }
 
+  #grid4 {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  #grid4 svg { width: 100%; height: 100%; display: block; }
+
   .controls {
     padding: 8px 16px calc(14px + env(safe-area-inset-bottom));
     display: flex;
@@ -93,7 +103,7 @@
     max-width: 860px;
   }
 
-  .row.buttons { justify-content: center; flex-wrap: wrap; }
+  .row.buttons { justify-content: center; flex-wrap: wrap; gap: 8px; }
 
   [hidden] { display: none !important; }
 
@@ -131,17 +141,8 @@
     cursor: pointer;
   }
 
-  input[type=range]::-webkit-slider-runnable-track {
-    height: 10px;
-    border-radius: 5px;
-    background: var(--border);
-  }
-
-  input[type=range]::-moz-range-track {
-    height: 10px;
-    border-radius: 5px;
-    background: var(--border);
-  }
+  input[type=range]::-webkit-slider-runnable-track { height: 10px; border-radius: 5px; background: var(--border); }
+  input[type=range]::-moz-range-track { height: 10px; border-radius: 5px; background: var(--border); }
 
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -155,11 +156,8 @@
   }
 
   input[type=range]::-moz-range-thumb {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--surface);
-    border: 3px solid var(--text);
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--surface); border: 3px solid var(--text);
   }
 
   .readout {
@@ -178,7 +176,6 @@
     justify-content: center;
     font-size: 22px;
     font-variant-numeric: tabular-nums;
-    color: var(--text);
   }
 
   .value .hint { color: var(--muted); font-size: 17px; }
@@ -204,6 +201,8 @@
     color: #fff;
   }
 
+  .btn.letter { min-width: 56px; padding: 0 12px; font-size: 20px; font-weight: 600; }
+
   /* SVG */
   .axis      { stroke: var(--text); stroke-width: 1.5; }
   .gridline  { stroke: var(--grid); stroke-width: 1; }
@@ -211,22 +210,24 @@
   .axislabel { fill: var(--text); font-size: 17px; font-family: "Times New Roman", Times, serif; font-style: italic; }
   .axislabel tspan.up { font-style: normal; }
   .title     { fill: var(--text); font-size: 17px; font-family: "Times New Roman", Times, serif; }
-  .ghosttitle{ fill: var(--muted); font-size: 15px; font-family: "Times New Roman", Times, serif; }
+  .subtitle  { fill: var(--muted); font-size: 15px; font-family: "Times New Roman", Times, serif; }
+  .letterlabel { fill: var(--text); font-size: 26px; font-weight: 700; }
   .bar       { fill: var(--bar); }
-  .bar.max   { fill: var(--bar-max); }
-  .bar.sel   { fill: var(--bar-sel); }
+  .bar.max   { fill: var(--hi); }
+  .bar.sel   { fill: var(--hi); }
   .bar.dim   { fill: #9fb6d8; }
   .bar.outlined { stroke: var(--text); stroke-width: 2; }
-  .cut      { fill: none; stroke: #fff; stroke-width: 3; }
-  .cutarrow { fill: #fff; }
   .ghost     { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 5 3; }
+  .guess     { fill: none; stroke: var(--hi); stroke-width: 3; }
+  .cut       { fill: none; stroke: #fff; stroke-width: 3; }
+  .cutarrow  { fill: #fff; }
 
   /* Lehrermodus */
   #teacher {
     position: fixed;
     top: 8px;
     right: 8px;
-    width: 280px;
+    width: 290px;
     max-height: calc(100% - 16px);
     overflow: auto;
     background: var(--surface);
@@ -240,13 +241,8 @@
 
   #teacher summary { cursor: pointer; font-weight: 600; color: var(--accent); }
   #teacher h3 { font-size: 13px; margin-top: 10px; }
-  #teacher label {
-    display: grid;
-    grid-template-columns: 1fr 80px;
-    gap: 2px 8px;
-    margin-top: 6px;
-    align-items: center;
-  }
+  #teacher label { display: grid; grid-template-columns: 1fr 80px; gap: 2px 8px; margin-top: 6px; align-items: center; }
+  #teacher label.check { grid-template-columns: 20px 1fr; }
   #teacher input { width: 100%; font: inherit; padding: 4px; }
   #teacher .btn { margin-top: 10px; min-height: 34px; font-size: 13px; padding: 0 12px; }
   #teacher .note { color: var(--muted); margin-top: 6px; }
@@ -257,16 +253,26 @@
 <header>
   <strong>Binomialverteilung</strong>
   <div class="tabs" role="tablist" aria-label="Teil auswählen">
-    <button class="btn" role="tab" id="tab1" aria-selected="true">1 Histogramm lesen</button>
-    <button class="btn" role="tab" id="tab2" aria-selected="false">2 n und p verändern</button>
+    <button class="btn" role="tab" data-part="1">1 Lesen</button>
+    <button class="btn" role="tab" data-part="2">2 n und p</button>
+    <button class="btn" role="tab" data-part="3">3 Zuordnen</button>
+    <button class="btn" role="tab" data-part="4">4 Prüfen</button>
+    <button class="btn" role="tab" data-part="5">5 Schätzen</button>
   </div>
 </header>
 
 <div id="stage">
   <svg id="chart" xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm"></svg>
+  <div id="grid4" hidden>
+    <svg xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm A"></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm B"></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm C"></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" aria-label="Histogramm D"></svg>
+  </div>
 </div>
 
 <div class="controls">
+  <div class="row buttons" id="rowLetters" hidden></div>
   <div class="row" id="rowN" hidden>
     <span class="param">n</span>
     <button class="step" id="nMinus" aria-label="n verkleinern">−</button>
@@ -281,12 +287,17 @@
     <button class="step" id="pPlus" aria-label="p vergrößern">+</button>
     <span class="readout" id="pOut">0,50</span>
   </div>
-  <div class="row buttons" id="rowButtons" hidden>
-    <button class="btn" id="btnFix" aria-pressed="true">Hochachse festhalten</button>
+  <div class="row buttons" id="rowButtons2" hidden>
+    <button class="btn" id="btnFixK" aria-pressed="true">k-Achse festhalten</button>
+    <button class="btn" id="btnFixY" aria-pressed="true">Hochachse festhalten</button>
     <button class="btn" id="btnGhost">Vergleichsbild merken</button>
     <button class="btn" id="btnGhostClear" disabled>Vergleichsbild löschen</button>
   </div>
-  <div class="row value" id="valueRow"><span class="hint">Tippe auf einen Balken.</span></div>
+  <div class="row buttons" id="rowButtons5" hidden>
+    <button class="btn" id="btnCompare" aria-pressed="false">Vergleichen</button>
+    <button class="btn" id="btnNew">Neues Histogramm</button>
+  </div>
+  <div class="row value" id="valueRow"></div>
 </div>
 
 <script>
@@ -296,25 +307,16 @@
    Einstellungen (im Lehrermodus über ?lehrer veränderbar)
    ───────────────────────────────────────────── */
 const CFG = {
-  part1N: 10,      // Teil 1: feste Verteilung (wie GTR-Beispiel auf AB 36)
-  part1P: 0.2,
+  part1N: 10,      // Teil 1: Multiple-Choice-Test, 10 Fragen,
+  part1P: 0.25,    //         4 Antworten, eine richtig
   part2NMin: 10,   // Teil 2: kleinstes n am Regler
-  part2NMax: 50,   // Teil 2: größtes n am Regler
-  fixedYMax: 0.3,  // Teil 2: Hochachse bis … , wenn „festhalten“ an ist (höhere Balken werden gekappt)
+  part2NMax: 50,   // Teil 2: größtes n am Regler, zugleich Ende der festen k-Achse
+  fixedYMax: 0.3,  // Teil 2 und 5: feste Hochachse (höhere Balken werden gekappt)
+  showSolutions: false,  // Lehrermodus: Parameter in Teil 1, 3 und 5 anzeigen
 };
 
-const HASHES = { 1: '#lesen', 2: '#erkunden' };
+const HASHES = { 1: '#lesen', 2: '#erkunden', 3: '#zuordnen', 4: '#pruefen', 5: '#schaetzen' };
 const SVGNS = 'http://www.w3.org/2000/svg';
-
-const state = {
-  part: 1,
-  n: 10,
-  p: 0.50,
-  fixY: true,
-  ghost: null,          // { n, p, values }
-  sel1: null,           // ausgewählter Balken in Teil 1
-  sel2: null,           // ausgewählter Balken in Teil 2
-};
 
 /* ── Mathematik ── */
 function binom(n, p) {
@@ -330,7 +332,6 @@ function binom(n, p) {
 function fmt(x, d) { return x.toFixed(d).replace('.', ','); }
 
 function fmtP(p) {
-  // p mit zwei Nachkommastellen, im Lehrermodus ggf. mehr
   const s = String(Math.round(p * 10000) / 10000);
   const dec = s.includes('.') ? s.split('.')[1].length : 0;
   return fmt(p, Math.max(2, dec));
@@ -343,130 +344,231 @@ function niceStep(max, target) {
   return 10 * mag;
 }
 
-/* ── Zeichnen ── */
-const svg = document.getElementById('chart');
-let geom = null;   // für Treffer beim Antippen
+function niceMax(dataMax) {
+  const step = niceStep(dataMax, 5);
+  let yMax = Math.max(step, Math.ceil(dataMax / step - 1e-9) * step);
+  if (yMax < dataMax) yMax += step;
+  return yMax;
+}
 
-function el(name, attrs, parent) {
+/* ── Teil 3: vier Histogramme mit gleichen Achsen (Verteilungen stehen auf der Erarbeitungsseite) ── */
+const PART3 = [
+  { n: 20, p: 0.8 },   // A
+  { n: 40, p: 0.5 },   // B
+  { n: 20, p: 0.2 },   // C
+  { n: 20, p: 0.5 },   // D
+];
+const PART3_KMAX = 40, PART3_YMAX = 0.25;
+
+/* ── Teil 4: Diagramme mit angegebener Verteilung; nicht alle passen dazu ── */
+function mix(a, b, w) { return a.map((x, k) => w * x + (1 - w) * b[k]); }
+const PART4 = [
+  { n: 10, p: 0.6, values: binom(10, 0.6).map(x => 1.25 * x) },       // A: Summe der Höhen 1,25
+  { n: 10, p: 0.3, values: binom(10, 0.3) },                           // B: passt
+  { n: 10, p: 0.5, values: binom(10, 0.38) },                          // C: nicht symmetrisch
+  { n: 15, p: 0.8, values: binom(15, 0.8) },                           // D: passt
+  { n: 8,  p: 0.4, values: mix(binom(8, 0.15), binom(8, 0.75), 0.5) }, // E: zwei Gipfel
+  { n: 10, p: 0.2, values: binom(10, 0.7) },                           // F: Gipfel auf der falschen Seite
+];
+const LETTERS = 'ABCDEF';
+
+/* ── Zustand ── */
+const state = {
+  part: 1,
+  sel: { 1: null, 2: null, 4: null, 5: null },
+  // Teil 2
+  n2: 10, p2: 0.5, fixK: true, fixY: true, ghost: null,
+  // Teil 4
+  d4: 0,
+  // Teil 5
+  n5: 25, p5: 0.5, target: null, compare: false,
+};
+
+function newTarget() {
+  let n, p, guard = 0;
+  do {
+    n = 10 + Math.floor(Math.random() * 31);              // 10 … 40
+    p = (2 + Math.floor(Math.random() * 17)) / 20;         // 0,10 … 0,90 in 0,05-Schritten
+    guard++;
+  } while ((Math.max(...binom(n, p)) > CFG.fixedYMax ||
+            (state.target && state.target.n === n && state.target.p === p)) && guard < 200);
+  state.target = { n, p };
+  state.compare = false;
+  state.sel[5] = null;
+}
+
+/* ── Zeichnen ── */
+function el(svg, name, attrs) {
   const e = document.createElementNS(SVGNS, name);
   for (const a in attrs) e.setAttribute(a, attrs[a]);
-  (parent || svg).appendChild(e);
+  svg.appendChild(e);
   return e;
 }
 
-function current() {
-  if (state.part === 1) return { n: CFG.part1N, p: CFG.part1P };
-  return { n: state.n, p: state.p };
-}
-
-function draw() {
+/*
+  opts: values, kMax, yMax (null = anpassen), highlightMax, sel, dim, outlineSel,
+        overlays [{values, cls}], title, subtitle, letter, small
+*/
+function drawHist(svg, opts) {
   const W = svg.clientWidth, H = svg.clientHeight;
-  if (!W || !H) return;
+  if (!W || !H) return null;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   while (svg.firstChild) svg.removeChild(svg.firstChild);
 
-  const { n, p } = current();
-  const values = binom(n, p);
-  const ghost = state.part === 2 ? state.ghost : null;
-  const nAxis = Math.max(n, ghost ? ghost.n : 0);
+  const values = opts.values;
+  const overlays = opts.overlays || [];
+  const n = values.length - 1;
+  const kMax = Math.max(opts.kMax ?? n, n, ...overlays.map(o => o.values.length - 1));
+  const dataMax = Math.max(...values, ...overlays.flatMap(o => o.values));
+  const yMax = opts.yMax ?? niceMax(dataMax);
+  const yStep = niceStep(yMax, opts.small || H < 360 ? 4 : 6);
 
-  // Hochachse
-  let yMax;
-  const dataMax = Math.max(...values, ...(ghost ? ghost.values : [0]));
-  if (state.part === 2 && state.fixY) {
-    yMax = CFG.fixedYMax;
-  } else {
-    const step = niceStep(dataMax, 5);
-    yMax = Math.max(step, Math.ceil(dataMax / step - 1e-9) * step);
-    if (yMax < dataMax) yMax += step;
-  }
-  const yStep = niceStep(yMax, H < 360 ? 4 : 6);
-
-  const m = { l: 64, r: 18, t: 40, b: 50 };
+  const m = opts.small ? { l: 48, r: 16, t: 36, b: 42 } : { l: 64, r: 18, t: 40, b: 50 };
   const pw = W - m.l - m.r, ph = H - m.t - m.b;
-  const slot = pw / (nAxis + 1);
-  const barW = Math.max(1, slot * (nAxis > 30 ? 0.86 : 0.8));
+  const slot = pw / (kMax + 1);
+  const barW = Math.max(1, slot * (kMax > 30 ? 0.86 : 0.8));
   const X = k => m.l + slot * (k + 0.5);
   const Y = v => m.t + ph * (1 - Math.min(v, yMax) / yMax);
-  geom = { m, slot, nAxis, n };
 
   // Gitter und Beschriftung Hochachse
   const yDec = (String(+yStep.toPrecision(6)).split('.')[1] || '').length;
   for (let i = 0; i * yStep <= yMax + 1e-9; i++) {
     const v = i * yStep, y = Y(v);
-    if (i > 0) el('line', { x1: m.l, x2: m.l + pw, y1: y, y2: y, class: 'gridline' });
-    const t = el('text', { x: m.l - 8, y: y + 4, 'text-anchor': 'end', class: 'ticklabel' });
+    if (i > 0) el(svg, 'line', { x1: m.l, x2: m.l + pw, y1: y, y2: y, class: 'gridline' });
+    const t = el(svg, 'text', { x: m.l - 8, y: y + 4, 'text-anchor': 'end', class: 'ticklabel' });
     t.textContent = fmt(v, i === 0 ? 0 : yDec);
   }
 
-  // Balken (Vergleichsbild wird danach als Umriss darübergelegt)
+  // Balken
   const maxV = Math.max(...values);
-  const sel = state.part === 1 ? state.sel1 : state.sel2;
   for (let k = 0; k <= n; k++) {
     const v = values[k];
     const y = Y(v), h = m.t + ph - y;
     let cls = 'bar';
-    if (state.part === 2 && maxV - v < 1e-12) cls += ' max';
-    if (state.part === 1 && sel === k) cls += ' sel';
-    if (state.part === 1 && sel !== null && sel !== k) cls += ' dim';
-    if (state.part === 2 && sel === k) cls += ' outlined';
-    el('rect', { x: X(k) - barW / 2, y, width: barW, height: Math.max(0, h), class: cls });
+    if (opts.highlightMax && maxV - v < 1e-12) cls += ' max';
+    if (opts.dim && opts.sel !== null && opts.sel !== undefined) cls += opts.sel === k ? ' sel' : ' dim';
+    if (opts.outlineSel && opts.sel === k) cls += ' outlined';
+    el(svg, 'rect', { x: X(k) - barW / 2, y, width: barW, height: Math.max(0, h), class: cls });
     if (v > yMax) {
       // Balken ist höher als die Hochachse: oben mit Bruchkante und Pfeil kennzeichnen
-      const x0 = X(k) - barW / 2, z = Math.min(6, barW / 4);
-      el('path', { d: `M${x0 - 1} ${y + 22} l${barW / 4 + 1} ${-z} l${barW / 4} ${z} l${barW / 4} ${-z} l${barW / 4 + 1} ${z}`,
-                   class: 'cut' });
-      const a = Math.min(7, barW / 3);
-      el('path', { d: `M${X(k) - a} ${y + 14} L${X(k)} ${y + 5} L${X(k) + a} ${y + 14} Z`, class: 'cutarrow' });
+      const x0 = X(k) - barW / 2, z = Math.min(6, barW / 4), a = Math.min(7, barW / 3);
+      el(svg, 'path', { d: `M${x0 - 1} ${y + 22} l${barW / 4 + 1} ${-z} l${barW / 4} ${z} l${barW / 4} ${-z} l${barW / 4 + 1} ${z}`, class: 'cut' });
+      el(svg, 'path', { d: `M${X(k) - a} ${y + 14} L${X(k)} ${y + 5} L${X(k) + a} ${y + 14} Z`, class: 'cutarrow' });
     }
   }
 
-  if (ghost) {
-    for (let k = 0; k <= ghost.n; k++) {
-      const v = ghost.values[k];
-      if (v < yMax * 1e-4) continue;
-      const y = Y(v), h = m.t + ph - y;
-      el('rect', { x: X(k) - barW / 2, y, width: barW, height: h, class: 'ghost' });
-    }
+  // Umrisse (Vergleichsbild, Schätzung)
+  for (const o of overlays) {
+    o.values.forEach((v, k) => {
+      if (v < yMax * 1e-4) return;
+      const y = Y(v);
+      el(svg, 'rect', { x: X(k) - barW / 2, y, width: barW, height: m.t + ph - y, class: o.cls });
+    });
   }
 
   // Achsen
-  el('line', { x1: m.l, x2: m.l + pw, y1: m.t + ph, y2: m.t + ph, class: 'axis' });
-  el('line', { x1: m.l, x2: m.l, y1: m.t + ph, y2: m.t - 10, class: 'axis' });
+  el(svg, 'line', { x1: m.l, x2: m.l + pw, y1: m.t + ph, y2: m.t + ph, class: 'axis' });
+  el(svg, 'line', { x1: m.l, x2: m.l, y1: m.t + ph, y2: m.t - 10, class: 'axis' });
 
   // Beschriftung Rechtsachse
-  const minLabelGap = 26;
   let kStep = 1;
-  for (const s of [1, 2, 5, 10, 20]) { kStep = s; if (slot * s >= minLabelGap) break; }
-  for (let k = 0; k <= nAxis; k += kStep) {
-    const t = el('text', { x: X(k), y: m.t + ph + 20, 'text-anchor': 'middle', class: 'ticklabel' });
+  for (const s of [1, 2, 5, 10, 20]) { kStep = s; if (slot * s >= 26) break; }
+  for (let k = 0; k <= kMax; k += kStep) {
+    const t = el(svg, 'text', { x: X(k), y: m.t + ph + 20, 'text-anchor': 'middle', class: 'ticklabel' });
     t.textContent = k;
   }
 
   // Achsentitel
-  const tk = el('text', { x: m.l + pw, y: m.t + ph + 42, 'text-anchor': 'end', class: 'axislabel' });
+  const tk = el(svg, 'text', { x: m.l + pw, y: m.t + ph + (opts.small ? 38 : 42), 'text-anchor': 'end', class: 'axislabel' });
   tk.textContent = 'k';
-  const ty = el('text', { x: 8, y: 22, class: 'axislabel' });
-  ty.innerHTML = 'P<tspan class="up">(</tspan>X<tspan class="up"> = </tspan>k<tspan class="up">)</tspan>';
-
-  // Parameter oben rechts
-  const tt = el('text', { x: m.l + pw, y: 22, 'text-anchor': 'end', class: 'title' });
-  tt.innerHTML = `<tspan font-style="italic">n</tspan> = ${n},  <tspan font-style="italic">p</tspan> = ${fmtP(p)}`;
-  if (ghost) {
-    const tg = el('text', { x: m.l + pw, y: 40, 'text-anchor': 'end', class: 'ghosttitle' });
-    tg.innerHTML = `Vergleich (gestrichelt): <tspan font-style="italic">n</tspan> = ${ghost.n},  <tspan font-style="italic">p</tspan> = ${fmtP(ghost.p)}`;
+  if (opts.letter) {
+    const tl = el(svg, 'text', { x: 10, y: 28, class: 'letterlabel' });
+    tl.textContent = opts.letter;
+  } else {
+    const ty = el(svg, 'text', { x: 8, y: 22, class: 'axislabel' });
+    ty.innerHTML = 'P<tspan class="up">(</tspan>X<tspan class="up"> = </tspan>k<tspan class="up">)</tspan>';
   }
 
-  updateValue(values);
+  if (opts.title) {
+    const tt = el(svg, 'text', { x: m.l + pw, y: 22, 'text-anchor': 'end', class: 'title' });
+    tt.innerHTML = opts.title;
+  }
+  if (opts.subtitle) {
+    const tg = el(svg, 'text', { x: m.l + pw, y: 40, 'text-anchor': 'end', class: 'subtitle' });
+    tg.innerHTML = opts.subtitle;
+  }
+
+  return { m, slot, n };
 }
 
-function updateValue(values) {
-  const row = document.getElementById('valueRow');
-  const sel = state.part === 1 ? state.sel1 : state.sel2;
-  if (sel === null || sel >= values.length) {
-    row.innerHTML = '<span class="hint">Tippe auf einen Balken.</span>';
+const np = (n, p) => `<tspan font-style="italic">n</tspan> = ${n},  <tspan font-style="italic">p</tspan> = ${fmtP(p)}`;
+
+const svg = document.getElementById('chart');
+const grid4 = document.getElementById('grid4');
+let geom = null;
+let shownValues = null;   // Werte des großen Diagramms (für Anzeige und „Werte kopieren“)
+
+function draw() {
+  const part = state.part;
+  svg.style.display = part === 3 ? 'none' : '';
+  grid4.hidden = part !== 3;
+
+  if (part === 3) {
+    [...grid4.children].forEach((s, i) => {
+      const d = PART3[i];
+      drawHist(s, {
+        values: binom(d.n, d.p), kMax: PART3_KMAX, yMax: PART3_YMAX, small: true,
+        letter: LETTERS[i], title: CFG.showSolutions ? np(d.n, d.p) : null,
+      });
+    });
+    geom = null; shownValues = null;
+    return;
+  }
+
+  let opts;
+  if (part === 1) {
+    shownValues = binom(CFG.part1N, CFG.part1P);
+    opts = { values: shownValues, sel: state.sel[1], dim: true,
+             title: CFG.showSolutions ? np(CFG.part1N, CFG.part1P) : null };
+  } else if (part === 2) {
+    shownValues = binom(state.n2, state.p2);
+    const g = state.ghost;
+    opts = {
+      values: shownValues, highlightMax: true, sel: state.sel[2], outlineSel: true,
+      kMax: state.fixK ? CFG.part2NMax : null, yMax: state.fixY ? CFG.fixedYMax : null,
+      overlays: g ? [{ values: g.values, cls: 'ghost' }] : [],
+      title: np(state.n2, state.p2),
+      subtitle: g ? `Vergleich (gestrichelt): ${np(g.n, g.p)}` : null,
+    };
+  } else if (part === 4) {
+    const d = PART4[state.d4];
+    shownValues = d.values;
+    opts = { values: shownValues, sel: state.sel[4], outlineSel: true, yMax: 0.35,
+             title: `${LETTERS[state.d4]}:  ${np(d.n, d.p)}` };
   } else {
-    row.innerHTML = `<span><i>k</i>&nbsp;=&nbsp;${sel}:&emsp;<i>P</i>(<i>X</i>&nbsp;=&nbsp;${sel})&nbsp;=&nbsp;${fmt(values[sel], 4)}</span>`;
+    const t = state.target;
+    shownValues = binom(t.n, t.p);
+    opts = {
+      values: shownValues, sel: state.sel[5], outlineSel: true,
+      kMax: CFG.part2NMax, yMax: CFG.fixedYMax,
+      overlays: state.compare ? [{ values: binom(state.n5, state.p5), cls: 'guess' }] : [],
+      title: CFG.showSolutions ? `gesucht: ${np(t.n, t.p)}` : null,
+      subtitle: state.compare ? `Schätzung (Umriss): ${np(state.n5, state.p5)}` : null,
+    };
+  }
+  geom = drawHist(svg, opts);
+  updateValue();
+}
+
+function updateValue() {
+  const row = document.getElementById('valueRow');
+  const sel = state.sel[state.part];
+  if (sel === null || sel === undefined || !shownValues || sel >= shownValues.length) {
+    row.innerHTML = '<span class="hint">Tippe auf einen Balken.</span>';
+  } else if (state.part === 4) {
+    row.innerHTML = `<span><i>k</i>&nbsp;=&nbsp;${sel}:&emsp;Höhe des Balkens&nbsp;${fmt(shownValues[sel], 4)}</span>`;
+  } else {
+    row.innerHTML = `<span><i>k</i>&nbsp;=&nbsp;${sel}:&emsp;<i>P</i>(<i>X</i>&nbsp;=&nbsp;${sel})&nbsp;=&nbsp;${fmt(shownValues[sel], 4)}</span>`;
   }
 }
 
@@ -474,42 +576,30 @@ function updateValue(values) {
 svg.addEventListener('pointerdown', e => {
   if (!geom) return;
   const r = svg.getBoundingClientRect();
-  const x = e.clientX - r.left;
-  let k = Math.floor((x - geom.m.l) / geom.slot);
+  const k = Math.floor((e.clientX - r.left - geom.m.l) / geom.slot);
   if (k < 0 || k > geom.n) return;
-  if (state.part === 1) state.sel1 = state.sel1 === k ? null : k;
-  else state.sel2 = state.sel2 === k ? null : k;
+  const p = state.part;
+  state.sel[p] = state.sel[p] === k ? null : k;
   draw();
 });
 
 /* ── Bedienung ── */
-const ui = {
-  tab1: document.getElementById('tab1'),
-  tab2: document.getElementById('tab2'),
-  rowN: document.getElementById('rowN'),
-  rowP: document.getElementById('rowP'),
-  rowButtons: document.getElementById('rowButtons'),
-  nSlider: document.getElementById('nSlider'),
-  pSlider: document.getElementById('pSlider'),
-  nOut: document.getElementById('nOut'),
-  pOut: document.getElementById('pOut'),
-  btnFix: document.getElementById('btnFix'),
-  btnGhost: document.getElementById('btnGhost'),
-  btnGhostClear: document.getElementById('btnGhostClear'),
-};
+const $ = id => document.getElementById(id);
+const tabs = [...document.querySelectorAll('[role=tab]')];
 
-function setN(n) {
-  state.n = Math.max(CFG.part2NMin, Math.min(CFG.part2NMax, Math.round(n)));
-  ui.nSlider.value = state.n;
-  ui.nOut.textContent = state.n;
-  if (state.sel2 !== null && state.sel2 > state.n) state.sel2 = null;
-  draw();
-}
+// Regler gelten in Teil 2 für das Histogramm, in Teil 5 für die Schätzung
+function getNP() { return state.part === 5 ? [state.n5, state.p5] : [state.n2, state.p2]; }
 
-function setP(p) {
-  state.p = Math.max(0, Math.min(1, Math.round(p * 100) / 100));
-  ui.pSlider.value = Math.round(state.p * 100);
-  ui.pOut.textContent = fmt(state.p, 2);
+function setNP(n, p) {
+  n = Math.max(CFG.part2NMin, Math.min(CFG.part2NMax, Math.round(n)));
+  p = Math.max(0, Math.min(1, Math.round(p * 100) / 100));
+  if (state.part === 5) { state.n5 = n; state.p5 = p; }
+  else {
+    state.n2 = n; state.p2 = p;
+    if (state.sel[2] !== null && state.sel[2] > n) state.sel[2] = null;
+  }
+  $('nSlider').value = n; $('nOut').textContent = n;
+  $('pSlider').value = Math.round(p * 100); $('pOut').textContent = fmt(p, 2);
   draw();
 }
 
@@ -519,43 +609,63 @@ function partFromHash() {
 
 function showPart(k) {
   state.part = k;
-  ui.tab1.setAttribute('aria-selected', k === 1);
-  ui.tab2.setAttribute('aria-selected', k === 2);
-  ui.rowN.hidden = ui.rowP.hidden = ui.rowButtons.hidden = k !== 2;
+  tabs.forEach(t => t.setAttribute('aria-selected', Number(t.dataset.part) === k));
+  $('rowN').hidden = $('rowP').hidden = !(k === 2 || k === 5);
+  $('rowButtons2').hidden = k !== 2;
+  $('rowButtons5').hidden = k !== 5;
+  $('rowLetters').hidden = k !== 4;
+  $('valueRow').hidden = k === 3;
+  document.querySelector('.controls').hidden = k === 3;
   if (location.hash !== HASHES[k]) history.replaceState(null, '', HASHES[k]);
-  draw();
+  if (k === 2 || k === 5) { const [n, p] = getNP(); setNP(n, p); } else draw();
 }
 
-ui.tab1.addEventListener('click', () => showPart(1));
-ui.tab2.addEventListener('click', () => showPart(2));
+tabs.forEach(t => t.addEventListener('click', () => showPart(Number(t.dataset.part))));
 window.addEventListener('hashchange', () => showPart(partFromHash()));
 
-ui.nSlider.addEventListener('input', () => setN(+ui.nSlider.value));
-ui.pSlider.addEventListener('input', () => setP(+ui.pSlider.value / 100));
-document.getElementById('nMinus').addEventListener('click', () => setN(state.n - 1));
-document.getElementById('nPlus').addEventListener('click', () => setN(state.n + 1));
-document.getElementById('pMinus').addEventListener('click', () => setP(state.p - 0.01));
-document.getElementById('pPlus').addEventListener('click', () => setP(state.p + 0.01));
+$('nSlider').addEventListener('input', () => setNP(+$('nSlider').value, getNP()[1]));
+$('pSlider').addEventListener('input', () => setNP(getNP()[0], +$('pSlider').value / 100));
+$('nMinus').addEventListener('click', () => { const [n, p] = getNP(); setNP(n - 1, p); });
+$('nPlus').addEventListener('click',  () => { const [n, p] = getNP(); setNP(n + 1, p); });
+$('pMinus').addEventListener('click', () => { const [n, p] = getNP(); setNP(n, p - 0.01); });
+$('pPlus').addEventListener('click',  () => { const [n, p] = getNP(); setNP(n, p + 0.01); });
 
-ui.btnFix.addEventListener('click', () => {
-  state.fixY = !state.fixY;
-  ui.btnFix.setAttribute('aria-pressed', state.fixY);
-  draw();
+$('btnFixK').addEventListener('click', () => {
+  state.fixK = !state.fixK; $('btnFixK').setAttribute('aria-pressed', state.fixK); draw();
+});
+$('btnFixY').addEventListener('click', () => {
+  state.fixY = !state.fixY; $('btnFixY').setAttribute('aria-pressed', state.fixY); draw();
+});
+$('btnGhost').addEventListener('click', () => {
+  state.ghost = { n: state.n2, p: state.p2, values: binom(state.n2, state.p2) };
+  $('btnGhostClear').disabled = false; draw();
+});
+$('btnGhostClear').addEventListener('click', () => {
+  state.ghost = null; $('btnGhostClear').disabled = true; draw();
 });
 
-ui.btnGhost.addEventListener('click', () => {
-  state.ghost = { n: state.n, p: state.p, values: binom(state.n, state.p) };
-  ui.btnGhostClear.disabled = false;
-  draw();
+$('btnCompare').addEventListener('click', () => {
+  state.compare = !state.compare; $('btnCompare').setAttribute('aria-pressed', state.compare); draw();
+});
+$('btnNew').addEventListener('click', () => {
+  newTarget(); $('btnCompare').setAttribute('aria-pressed', false); draw();
 });
 
-ui.btnGhostClear.addEventListener('click', () => {
-  state.ghost = null;
-  ui.btnGhostClear.disabled = true;
-  draw();
+// Buchstaben für Teil 4
+PART4.forEach((d, i) => {
+  const b = document.createElement('button');
+  b.className = 'btn letter';
+  b.textContent = LETTERS[i];
+  b.setAttribute('aria-pressed', i === 0);
+  b.addEventListener('click', () => {
+    state.d4 = i; state.sel[4] = null;
+    [...$('rowLetters').children].forEach((c, j) => c.setAttribute('aria-pressed', j === i));
+    draw();
+  });
+  $('rowLetters').appendChild(b);
 });
 
-new ResizeObserver(draw).observe(document.getElementById('stage'));
+new ResizeObserver(draw).observe($('stage'));
 
 /* ── Lehrermodus ── */
 function setupTeacher() {
@@ -566,12 +676,14 @@ function setupTeacher() {
     <h3>Teil 1</h3>
     <label>n <input type="number" id="t1n" min="1" max="100" step="1"></label>
     <label>p <input type="number" id="t1p" min="0" max="1" step="0.001"></label>
-    <h3>Teil 2</h3>
+    <h3>Teil 2 und 5</h3>
     <label>kleinstes n am Regler <input type="number" id="t2min" min="1" max="50" step="1"></label>
-    <label>größtes n am Regler <input type="number" id="t2max" min="10" max="100" step="1"></label>
+    <label>größtes n (Ende k-Achse) <input type="number" id="t2max" min="10" max="100" step="1"></label>
     <label>Hochachse fest bis <input type="number" id="t2y" min="0.05" max="1" step="0.05"></label>
+    <h3>Teil 1, 3 und 5</h3>
+    <label class="check"><input type="checkbox" id="tSol"> n und p anzeigen</label>
     <button class="btn" id="tCopy">Werte kopieren</button>
-    <div class="note" id="tNote">Kopiert die Tabelle k, P(X = k) des angezeigten Histogramms (für Excel/GTR).</div>`;
+    <div class="note" id="tNote">Kopiert die Tabelle k, Höhe des angezeigten Diagramms (in Teil 3 die Parameter A–D).</div>`;
   document.body.appendChild(box);
 
   const f = id => box.querySelector('#' + id);
@@ -583,7 +695,7 @@ function setupTeacher() {
 
   f('t1n').addEventListener('change', e => {
     CFG.part1N = Math.max(1, Math.min(100, Math.round(+e.target.value || 1)));
-    e.target.value = CFG.part1N; state.sel1 = null; draw();
+    e.target.value = CFG.part1N; state.sel[1] = null; draw();
   });
   f('t1p').addEventListener('change', e => {
     CFG.part1P = Math.max(0, Math.min(1, +e.target.value || 0));
@@ -591,31 +703,36 @@ function setupTeacher() {
   });
   f('t2min').addEventListener('change', e => {
     CFG.part2NMin = Math.max(1, Math.min(CFG.part2NMax, Math.round(+e.target.value || 1)));
-    e.target.value = CFG.part2NMin; ui.nSlider.min = CFG.part2NMin; setN(state.n);
+    e.target.value = CFG.part2NMin; $('nSlider').min = CFG.part2NMin;
+    const [n, p] = getNP(); setNP(n, p);
   });
   f('t2max').addEventListener('change', e => {
     CFG.part2NMax = Math.max(CFG.part2NMin, Math.min(100, Math.round(+e.target.value || 50)));
-    e.target.value = CFG.part2NMax; ui.nSlider.max = CFG.part2NMax; setN(state.n);
+    e.target.value = CFG.part2NMax; $('nSlider').max = CFG.part2NMax;
+    const [n, p] = getNP(); setNP(n, p);
   });
   f('t2y').addEventListener('change', e => {
     CFG.fixedYMax = Math.max(0.05, Math.min(1, +e.target.value || 0.3));
     e.target.value = CFG.fixedYMax; draw();
   });
+  f('tSol').addEventListener('change', e => { CFG.showSolutions = e.target.checked; draw(); });
   f('tCopy').addEventListener('click', async () => {
-    const { n, p } = current();
-    const v = binom(n, p);
-    const text = `n = ${n}\tp = ${fmtP(p)}\nk\tP(X = k)\n` +
-      v.map((x, k) => `${k}\t${fmt(x, 6)}`).join('\n');
+    let text;
+    if (state.part === 3) {
+      text = PART3.map((d, i) => `${LETTERS[i]}\tn = ${d.n}\tp = ${fmtP(d.p)}`).join('\n');
+    } else {
+      text = 'k\tHöhe\n' + shownValues.map((x, k) => `${k}\t${fmt(x, 6)}`).join('\n');
+    }
     try { await navigator.clipboard.writeText(text); f('tNote').textContent = 'Kopiert.'; }
     catch (err) { f('tNote').textContent = 'Kopieren nicht möglich.'; }
   });
 }
 
-if (new URLSearchParams(location.search).has('lehrer')) setupTeacher();
-if (new URLSearchParams(location.search).has('eingebettet')) document.body.classList.add('embedded');
+const params = new URLSearchParams(location.search);
+if (params.has('lehrer')) setupTeacher();
+if (params.has('eingebettet')) document.body.classList.add('embedded');
 
-setN(state.n);
-setP(state.p);
+newTarget();
 showPart(partFromHash());
 </script>
 </body>
